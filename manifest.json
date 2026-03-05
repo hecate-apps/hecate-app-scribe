@@ -1,0 +1,23 @@
+{
+  "name": "scribe",
+  "version": "0.1.0",
+  "icon": "\u270f",
+  "description": "Document Editor",
+  "tag": "scribe-studio",
+  "trust_level": "untrusted",
+  "permissions": [],
+  "repository": "https://github.com/hecate-apps/hecate-app-scribe",
+  "license": "Apache-2.0",
+  "appstore": {
+    "plugin_name": "Scribe",
+    "org": "hecate-apps",
+    "homepage": "https://github.com/hecate-apps/hecate-app-scribe",
+    "tags": "editor,documents,office,writing",
+    "license_type": "free",
+    "fee_cents": 0,
+    "fee_currency": "EUR",
+    "node_limit": 0,
+    "oci_image": "ghcr.io/hecate-apps/hecate-app-scribed",
+    "min_daemon_version": "0.14.0"
+  }
+}

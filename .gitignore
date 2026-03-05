@@ -1,0 +1,21 @@
+# Erlang
+_build/
+deps/
+*.beam
+erl_crash.dump
+rebar.lock
+
+# Node
+node_modules/
+dist/
+build/
+.svelte-kit/
+
+# OS
+.DS_Store
+*.swp
+*~
+
+# IDE
+.idea/
+.vscode/

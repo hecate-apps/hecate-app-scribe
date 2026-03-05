@@ -1,0 +1,25 @@
+{application, hecate_app_scribed, [
+    {description, "Hecate Scribe - Document Editor Daemon"},
+    {vsn, "0.1.0"},
+    {registered, [hecate_app_scribed_sup]},
+    {mod, {hecate_app_scribed_app, []}},
+    {applications, [
+        kernel, stdlib, crypto,
+        cowboy,
+        reckon_db, evoq, reckon_evoq
+
+        %% NOTE: Domain apps (guide_*, project_*, query_*) are NOT listed here.
+        %% hecate_app_scribed_app:start/2 creates documents_store.
+        %% Domain apps subscribe to the store in their init/1 callbacks.
+        %% If listed here, OTP starts them BEFORE the store exists.
+        %% Domain apps are started by the release config AFTER hecate_app_scribed.
+    ]},
+    {env, [
+        {data_dir, "~/.hecate/hecate-app-scribed"},
+        {api_socket_name, "api.sock"},
+        {enabled, true}
+    ]},
+    {modules, []},
+    {licenses, ["Apache-2.0"]},
+    {links, [{"GitHub", "https://github.com/hecate-apps/hecate-app-scribe"}]}
+]}.

@@ -1,0 +1,4 @@
+-define(DOC_INITIATED, 1).   %% 2^0
+-define(DOC_RENAMED,   2).   %% 2^1
+-define(DOC_ARCHIVED,  4).   %% 2^2
+-define(DOC_REVISED,   8).   %% 2^3
