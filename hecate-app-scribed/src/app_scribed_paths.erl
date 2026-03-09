@@ -5,9 +5,14 @@
          ensure_layout/0]).
 
 base_dir() ->
-    case application:get_env(hecate_app_scribed, data_dir) of
-        {ok, Dir} -> expand_path(Dir);
-        undefined -> expand_path("~/.hecate/hecate-app-scribed")
+    case os:getenv("HECATE_HOME") of
+        false ->
+            case application:get_env(hecate_app_scribed, data_dir) of
+                {ok, Dir} -> expand_path(Dir);
+                undefined -> expand_path("~/.hecate/hecate-app-scribed")
+            end;
+        HecateHome ->
+            filename:join(HecateHome, "hecate-app-scribed")
     end.
 
 sqlite_dir()     -> filename:join(base_dir(), "sqlite").
