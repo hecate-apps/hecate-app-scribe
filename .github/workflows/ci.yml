@@ -20,6 +20,7 @@ jobs:
           cache: npm
           cache-dependency-path: hecate-app-scribew/package-lock.json
       - run: npm ci
+      - run: npx svelte-kit sync
       - run: npm run check
       - run: npm run build:lib
       - uses: actions/upload-artifact@v4

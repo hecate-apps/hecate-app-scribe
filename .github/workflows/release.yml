@@ -23,7 +23,7 @@ jobs:
           cache-dependency-path: hecate-app-scribew/package-lock.json
       - name: Build frontend
         working-directory: hecate-app-scribew
-        run: npm ci && npm run build:lib
+        run: npm ci && npx svelte-kit sync && npm run build:lib
       - name: Copy frontend assets
         run: cp -r hecate-app-scribew/dist/ hecate-app-scribed/priv/static/
       - name: Build plugin tarball
