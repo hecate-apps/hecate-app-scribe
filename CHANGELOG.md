@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.6] - 2026-03-09
+
+### Fixed
+
+- Fix double `/api/` prefix in frontend API calls — "New" button and all document operations now work
+- Add `display_name` to manifest for friendly UI labels ("Scribe" instead of "hecate-app-scribe")
+- Use emoji shortcode `pencil2` instead of raw UTF-8 icon
+- Add `hecate_sdk` to dialyzer `plt_extra_apps` (fixes CI dialyzer failure)
+
 ## [0.1.5] - 2026-03-09
 
 ### Fixed
