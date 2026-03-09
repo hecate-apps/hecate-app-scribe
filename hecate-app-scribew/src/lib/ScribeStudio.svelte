@@ -9,6 +9,7 @@
 	let { api }: { api: PluginApi } = $props();
 
 	let selectedDocId = $state<string | null>(null);
+	let docListRef = $state<DocumentList | null>(null);
 
 	onMount(() => {
 		setApi(api);
@@ -21,6 +22,10 @@
 	function handleBack() {
 		selectedDocId = null;
 	}
+
+	function handleTitleChange() {
+		docListRef?.refresh();
+	}
 </script>
 
 <div class="flex h-full bg-zinc-950 text-zinc-200">
@@ -29,11 +34,11 @@
 			<button onclick={handleBack} class="px-3 py-2 text-xs text-zinc-400 hover:text-zinc-200 text-left border-b border-zinc-800">
 				&#8592; Back to list
 			</button>
-			<DocumentList onSelect={handleSelect} />
+			<DocumentList bind:this={docListRef} onSelect={handleSelect} />
 		</div>
 		<div class="flex-1 flex flex-col min-w-0">
 			{#key selectedDocId}
-				<ScribeEditor documentId={selectedDocId} />
+				<ScribeEditor documentId={selectedDocId} onTitleChange={handleTitleChange} />
 			{/key}
 		</div>
 	{:else}

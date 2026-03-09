@@ -2,7 +2,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { listDocuments, createDocument, archiveDocument } from './documents.js';
+	import { listDocuments, createDocument, archiveDocument, renameDocument } from './documents.js';
 	import type { Document } from './types.js';
 
 	let { onSelect }: { onSelect: (id: string) => void } = $props();
@@ -10,10 +10,12 @@
 	let documents = $state<Document[]>([]);
 	let loading = $state(true);
 	let creating = $state(false);
+	let renamingId = $state<string | null>(null);
+	let renameValue = $state('');
 
 	onMount(() => refresh());
 
-	async function refresh() {
+	export async function refresh() {
 		loading = true;
 		try {
 			documents = await listDocuments();
@@ -45,6 +47,32 @@
 		} catch (err) {
 			console.error('[scribe] Failed to archive:', err);
 		}
+	}
+
+	function startRename(e: MouseEvent, doc: Document) {
+		e.stopPropagation();
+		renamingId = doc.document_id;
+		renameValue = doc.title;
+	}
+
+	async function commitRename() {
+		if (!renamingId || !renameValue.trim()) {
+			renamingId = null;
+			return;
+		}
+		try {
+			await renameDocument(renamingId, renameValue.trim());
+			await refresh();
+		} catch (e) {
+			console.error('[scribe] Failed to rename:', e);
+		} finally {
+			renamingId = null;
+		}
+	}
+
+	function handleRenameKey(e: KeyboardEvent) {
+		if (e.key === 'Enter') commitRename();
+		if (e.key === 'Escape') renamingId = null;
 	}
 
 	function formatDate(ts: string): string {
@@ -85,15 +113,37 @@
 					onkeydown={(e) => { if (e.key === 'Enter') onSelect(doc.document_id); }}
 					class="w-full text-left px-3 py-2 hover:bg-zinc-800 border-b border-zinc-900 group cursor-pointer"
 				>
-					<div class="flex items-center justify-between">
-						<span class="text-sm text-zinc-200 truncate">{doc.title}</span>
-						<button
-							onclick={(e) => handleArchive(e, doc.document_id)}
-							class="text-xs text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100"
-							title="Archive"
-						>
-							&#x2715;
-						</button>
+					<div class="flex items-center justify-between gap-1">
+						{#if renamingId === doc.document_id}
+							<!-- svelte-ignore a11y_autofocus -->
+							<input
+								type="text"
+								bind:value={renameValue}
+								onblur={commitRename}
+								onkeydown={handleRenameKey}
+								onclick={(e) => e.stopPropagation()}
+								autofocus
+								class="flex-1 text-sm bg-zinc-800 text-zinc-200 border border-zinc-600 rounded px-1.5 py-0.5 outline-none focus:border-indigo-500"
+							/>
+						{:else}
+							<span class="text-sm text-zinc-200 truncate">{doc.title}</span>
+							<div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 flex-shrink-0">
+								<button
+									onclick={(e) => startRename(e, doc)}
+									class="text-xs text-zinc-600 hover:text-zinc-300 px-0.5"
+									title="Rename"
+								>
+									&#x270E;
+								</button>
+								<button
+									onclick={(e) => handleArchive(e, doc.document_id)}
+									class="text-xs text-zinc-600 hover:text-red-400 px-0.5"
+									title="Archive"
+								>
+									&#x2715;
+								</button>
+							</div>
+						{/if}
 					</div>
 					<div class="text-xs text-zinc-600 mt-0.5">
 						{formatDate(doc.updated_at)}

@@ -14,15 +14,23 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
-    {ok, SubId} = evoq_subscriptions:subscribe(
-        documents_store, event_type, <<"document_archived_v1">>,
-        <<"prj_document_archived">>, #{start_from => 0, subscriber_pid => self()}
-    ),
-    {ok, #state{subscription_id = SubId}}.
+    self() ! try_subscribe,
+    {ok, #state{}}.
 
 handle_call(_Request, _From, State) -> {reply, {error, unknown_call}, State}.
 handle_cast(_Msg, State) -> {noreply, State}.
 
+handle_info(try_subscribe, #state{subscription_id = undefined} = State) ->
+    case evoq_subscriptions:subscribe(
+        documents_store, event_type, <<"document_archived_v1">>,
+        <<"prj_document_archived">>, #{start_from => 0, subscriber_pid => self()}
+    ) of
+        {ok, SubId} ->
+            {noreply, State#state{subscription_id = SubId}};
+        _Error ->
+            erlang:send_after(1000, self(), try_subscribe),
+            {noreply, State}
+    end;
 handle_info({events, Events}, State) ->
     lists:foreach(fun(#evoq_event{data = Data}) ->
         project(Data)

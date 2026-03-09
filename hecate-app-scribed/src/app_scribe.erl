@@ -62,7 +62,7 @@ manifest() ->
     #{
         name => <<"hecate-app-scribe">>,
         display_name => <<"Scribe">>,
-        version => <<"0.1.6">>,
+        version => <<"0.1.7">>,
         description => <<"Document editor plugin">>,
         icon => <<"pencil2">>,
         tag => <<"scribe-studio">>,
