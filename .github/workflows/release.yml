@@ -25,7 +25,7 @@ jobs:
         working-directory: hecate-app-scribew
         run: npm ci && npx svelte-kit sync && npm run build:lib
       - name: Copy frontend assets
-        run: cp -r hecate-app-scribew/dist/ hecate-app-scribed/priv/static/
+        run: mkdir -p hecate-app-scribed/priv/static && cp -r hecate-app-scribew/dist/* hecate-app-scribed/priv/static/
       - name: Build plugin tarball
         run: bash hecate-app-scribed/scripts/package.sh
       - name: Extract version
