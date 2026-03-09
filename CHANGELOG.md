@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.1] - 2026-03-09
+
+### Changed
+
+- Switch from container (OCI) to in-VM plugin model
+- CI builds `.tar.gz` plugin package instead of Docker image
+- Remove Dockerfile and docker.yml workflow
+- Remove `oci_image` from manifest (replaced by `plugin_type: in_vm`)
+- Add `callback_module` and `plugin_type` to manifest
+
 ## [0.1.0] - 2026-03-05
 
 ### Added

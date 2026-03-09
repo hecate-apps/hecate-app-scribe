@@ -7,13 +7,27 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Create GitHub release
+  package:
+    name: Build plugin package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
         with:
-          fetch-depth: 0
+          otp-version: "27"
+          rebar3-version: "3.24"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hecate-app-scribew/package-lock.json
+      - name: Build frontend
+        working-directory: hecate-app-scribew
+        run: npm ci && npm run build:lib
+      - name: Copy frontend assets
+        run: cp -r hecate-app-scribew/dist/ hecate-app-scribed/priv/static/
+      - name: Build plugin tarball
+        run: bash hecate-app-scribed/scripts/package.sh
       - name: Extract version
         id: version
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
@@ -29,3 +43,4 @@ jobs:
         with:
           body: ${{ steps.changelog.outputs.body }}
           generate_release_notes: false
+          files: hecate-app-scribed/_build/plugin/scribe.tar.gz

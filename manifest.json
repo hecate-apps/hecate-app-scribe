@@ -1,6 +1,6 @@
 {
   "name": "scribe",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "icon": "\u270f",
   "description": "Document Editor",
   "callback_module": "app_scribe",
@@ -19,7 +19,6 @@
     "fee_cents": 0,
     "fee_currency": "EUR",
     "node_limit": 0,
-    "oci_image": "ghcr.io/hecate-apps/hecate-app-scribed",
     "min_daemon_version": "0.14.0",
     "group_name": "OFFICE"
   }

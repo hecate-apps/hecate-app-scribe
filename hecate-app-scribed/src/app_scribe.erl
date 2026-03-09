@@ -61,7 +61,7 @@ static_dir() ->
 manifest() ->
     #{
         name => <<"scribe">>,
-        version => <<"0.1.0">>,
+        version => <<"0.1.1">>,
         description => <<"Document editor plugin">>,
         icon => <<"pencil">>,
         min_sdk_version => <<"0.1.0">>
