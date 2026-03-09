@@ -1,7 +1,8 @@
 {
   "name": "hecate-app-scribe",
-  "version": "0.1.5",
-  "icon": "\u270f",
+  "display_name": "Scribe",
+  "version": "0.1.6",
+  "icon": "pencil2",
   "description": "Document Editor",
   "callback_module": "app_scribe",
   "plugin_type": "in_vm",
@@ -11,7 +12,6 @@
   "repository": "https://github.com/hecate-apps/hecate-app-scribe",
   "license": "Apache-2.0",
   "appstore": {
-    "plugin_name": "Scribe",
     "org": "hecate-apps",
     "homepage": "https://github.com/hecate-apps/hecate-app-scribe",
     "tags": "editor,documents,office,writing",
