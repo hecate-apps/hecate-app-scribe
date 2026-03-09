@@ -3,8 +3,8 @@
 %%% Implements the hecate_plugin behaviour for in-VM loading.
 %%% When loaded by hecate_plugin_loader, this module provides:
 %%%   - ReckonDB store config (documents_store)
-%%%   - Cowboy routes (mounted under /plugin/scribe/api/)
-%%%   - Static dir (frontend assets at /plugin/scribe/)
+%%%   - Cowboy routes (mounted under /plugin/hecate-app-scribe/api/)
+%%%   - Static dir (frontend assets at /plugin/hecate-app-scribe/)
 %%%   - Plugin manifest
 %%% @end
 -module(app_scribe).
@@ -60,8 +60,8 @@ static_dir() ->
 -spec manifest() -> map().
 manifest() ->
     #{
-        name => <<"scribe">>,
-        version => <<"0.1.1">>,
+        name => <<"hecate-app-scribe">>,
+        version => <<"0.1.2">>,
         description => <<"Document editor plugin">>,
         icon => <<"pencil">>,
         min_sdk_version => <<"0.1.0">>

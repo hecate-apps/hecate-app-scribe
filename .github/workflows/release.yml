@@ -43,4 +43,4 @@ jobs:
         with:
           body: ${{ steps.changelog.outputs.body }}
           generate_release_notes: false
-          files: hecate-app-scribed/_build/plugin/scribe.tar.gz
+          files: hecate-app-scribed/_build/plugin/hecate-app-scribe.tar.gz

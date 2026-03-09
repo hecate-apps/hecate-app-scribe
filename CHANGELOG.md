@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2] - 2026-03-09
+
+### Fixed
+
+- Plugin name corrected to `hecate-app-scribe` (was incorrectly shortened to `scribe`)
+- Tarball, routes, and plugin directory now use full name
+
 ## [0.1.1] - 2026-03-09
 
 ### Changed

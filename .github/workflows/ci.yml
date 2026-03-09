@@ -70,6 +70,6 @@ jobs:
         run: bash hecate-app-scribed/scripts/package.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: scribe-plugin
-          path: hecate-app-scribed/_build/plugin/scribe.tar.gz
+          name: hecate-app-scribe-plugin
+          path: hecate-app-scribed/_build/plugin/hecate-app-scribe.tar.gz
           retention-days: 7

@@ -3,7 +3,7 @@ set -euo pipefail
 
 ## Package the scribe plugin as a .tar.gz for in-VM loading.
 ##
-## Output: _build/plugin/scribe.tar.gz
+## Output: _build/plugin/hecate-app-scribe.tar.gz
 ## Contents:
 ##   ebin/           - All compiled .beam files (consolidated from all apps)
 ##   priv/static/    - Frontend assets (if built)
@@ -55,8 +55,8 @@ cp "$MANIFEST_SRC" "$STAGING_DIR/manifest.json"
 
 ## Create the tarball
 cd "$STAGING_DIR"
-tar czf "$BUILD_DIR/scribe.tar.gz" .
+tar czf "$BUILD_DIR/hecate-app-scribe.tar.gz" .
 
-echo "==> Package created: $BUILD_DIR/scribe.tar.gz"
-echo "    Install with: cp $BUILD_DIR/scribe.tar.gz ~/.hecate/plugins/scribe/"
-echo "    Then extract:  cd ~/.hecate/plugins/scribe/ && tar xzf scribe.tar.gz"
+echo "==> Package created: $BUILD_DIR/hecate-app-scribe.tar.gz"
+echo "    Install with: cp $BUILD_DIR/hecate-app-scribe.tar.gz ~/.hecate/plugins/scribe/"
+echo "    Then extract:  cd ~/.hecate/plugins/scribe/ && tar xzf hecate-app-scribe.tar.gz"
