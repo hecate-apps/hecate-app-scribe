@@ -16,11 +16,23 @@ query(Sql) -> query(Sql, []).
 query(Sql, Params) -> gen_server:call(?MODULE, {query, Sql, Params}).
 
 init([]) ->
-    DbPath = app_scribed_paths:sqlite_path("project_documents.db"),
+    DbPath = resolve_db_path(),
     ok = filelib:ensure_dir(DbPath),
     {ok, Db} = esqlite3:open(DbPath),
     ok = create_tables(Db),
     {ok, #state{db = Db}}.
+
+resolve_db_path() ->
+    case persistent_term:get(app_scribe_config, undefined) of
+        #{data_dir := DataDir} ->
+            %% In-VM mode: use plugin data dir
+            SqliteDir = filename:join(DataDir, "sqlite"),
+            ok = filelib:ensure_path(SqliteDir),
+            filename:join(SqliteDir, "project_documents.db");
+        undefined ->
+            %% Standalone container mode (fallback)
+            app_scribed_paths:sqlite_path("project_documents.db")
+    end.
 
 handle_call({execute, Sql, Params}, _From, #state{db = Db} = State) ->
     Result = case Params of

@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "icon": "\u270f",
   "description": "Document Editor",
+  "callback_module": "app_scribe",
+  "plugin_type": "in_vm",
   "tag": "scribe-studio",
   "trust_level": "untrusted",
   "permissions": [],
