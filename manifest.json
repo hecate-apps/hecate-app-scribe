@@ -1,6 +1,6 @@
 {
   "name": "hecate-app-scribe",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "icon": "\u270f",
   "description": "Document Editor",
   "callback_module": "app_scribe",

@@ -61,7 +61,7 @@ static_dir() ->
 manifest() ->
     #{
         name => <<"hecate-app-scribe">>,
-        version => <<"0.1.2">>,
+        version => <<"0.1.4">>,
         description => <<"Document editor plugin">>,
         icon => <<"pencil">>,
         min_sdk_version => <<"0.1.0">>
