@@ -12,7 +12,7 @@
 
 -include_lib("hecate_sdk/include/hecate_plugin.hrl").
 
--export([init/1, routes/0, store_config/0, static_dir/0, manifest/0]).
+-export([init/1, routes/0, store_config/0, static_dir/0, manifest/0, flag_maps/0]).
 
 -spec init(map()) -> {ok, map()} | {error, term()}.
 init(#{plugin_name := PluginName, store_id := StoreId, data_dir := DataDir}) ->
@@ -67,3 +67,7 @@ manifest() ->
         tag => <<"scribe-studio">>,
         min_sdk_version => <<"0.1.0">>
     }.
+
+-spec flag_maps() -> #{binary() => evoq_bit_flags:flag_map()}.
+flag_maps() ->
+    #{}.  %% No aggregates yet — scribe uses simple CRUD for now
