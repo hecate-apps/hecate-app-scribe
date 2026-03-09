@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5] - 2026-03-09
+
+### Fixed
+
+- Add `tag` field to `app_scribe:manifest()` — frontend needs it to load the custom element
+- Bump version to 0.1.5 (aligns manifest.json, app_scribe.erl)
+
 ## [0.1.2] - 2026-03-09
 
 ### Fixed
