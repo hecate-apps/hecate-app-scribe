@@ -20,6 +20,7 @@
     "fee_currency": "EUR",
     "node_limit": 0,
     "min_daemon_version": "0.14.0",
-    "group_name": "OFFICE"
+    "group_name": "OFFICE",
+    "group_icon": "briefcase"
   }
 }
