@@ -7,6 +7,7 @@
 -dialyzer({nowarn_function, [init/1, terminate/2]}).
 
 -include_lib("evoq/include/evoq_types.hrl").
+-include_lib("guide_document_lifecycle/include/document_status.hrl").
 
 -record(state, {subscription_id :: binary() | undefined}).
 
@@ -54,10 +55,19 @@ project(Data) ->
     Owner = get_field(<<"owner">>, owner, Data),
     CreatedAt = get_field(<<"created_at">>, created_at, Data),
     CreatedAtBin = integer_to_binary(CreatedAt),
+    Status = ?DOC_INITIATED,
+    StatusLabel = evoq_bit_flags:to_string(Status, ?DOC_FLAG_MAP),
+    Actions = json:encode(available_actions(Status)),
     Sql = "INSERT OR REPLACE INTO documents
-           (document_id, title, owner, status, content_size, created_at, updated_at)
-           VALUES (?1, ?2, ?3, 1, 0, ?4, ?4)",
-    project_documents_store:execute(Sql, [DocId, Title, Owner, CreatedAtBin]).
+           (document_id, title, owner, status, content_size, status_label, available_actions, created_at, updated_at)
+           VALUES (?1, ?2, ?3, 1, 0, ?4, ?5, ?6, ?6)",
+    project_documents_store:execute(Sql, [DocId, Title, Owner, StatusLabel, Actions, CreatedAtBin]).
+
+available_actions(Status) ->
+    case evoq_bit_flags:has(Status, ?DOC_ARCHIVED) of
+        true  -> [];
+        false -> [<<"rename">>, <<"revise">>, <<"archive">>]
+    end.
 
 get_field(BinKey, AtomKey, Data) ->
     maps:get(BinKey, Data, maps:get(AtomKey, Data, undefined)).

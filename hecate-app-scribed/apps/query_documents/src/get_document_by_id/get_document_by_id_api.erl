@@ -2,16 +2,18 @@
 -export([handle_get/3]).
 
 handle_get(DocId, Req0, _State) ->
-    Sql = "SELECT document_id, title, owner, status, content_size, created_at, updated_at
+    Sql = "SELECT document_id, title, owner, status, content_size, status_label, available_actions, created_at, updated_at
            FROM documents WHERE document_id = ?1",
     case project_documents_store:query(Sql, [DocId]) of
-        {ok, [[DId, Title, Owner, Status, ContentSize, CreatedAt, UpdatedAt]]} ->
+        {ok, [[DId, Title, Owner, Status, ContentSize, StatusLabel, ActionsJson, CreatedAt, UpdatedAt]]} ->
             app_scribed_api_utils:json_ok(#{
                 document_id => DId,
                 title => Title,
                 owner => Owner,
                 status => Status,
                 content_size => ContentSize,
+                status_label => StatusLabel,
+                available_actions => json:decode(ActionsJson),
                 created_at => CreatedAt,
                 updated_at => UpdatedAt
             }, Req0);

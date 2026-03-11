@@ -71,9 +71,15 @@ create_tables(Db) ->
         owner TEXT NOT NULL,
         status INTEGER NOT NULL DEFAULT 1,
         content_size INTEGER NOT NULL DEFAULT 0,
+        status_label TEXT NOT NULL DEFAULT '',
+        available_actions TEXT NOT NULL DEFAULT '[]',
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
     )"),
+
+    %% Migration: add columns if they don't exist (for existing databases)
+    ok = add_column_if_missing(Db, "documents", "status_label", "TEXT NOT NULL DEFAULT ''"),
+    ok = add_column_if_missing(Db, "documents", "available_actions", "TEXT NOT NULL DEFAULT '[]'"),
 
     ok = esqlite3:exec(Db, "CREATE TABLE IF NOT EXISTS document_content (
         document_id TEXT PRIMARY KEY,
@@ -84,3 +90,19 @@ create_tables(Db) ->
     )"),
 
     ok.
+
+add_column_if_missing(Db, Table, Column, TypeDef) ->
+    Sql = lists:flatten(io_lib:format(
+        "SELECT COUNT(*) FROM pragma_table_info('~s') WHERE name='~s'",
+        [Table, Column]
+    )),
+    case esqlite3:q(Db, Sql) of
+        [[0]] ->
+            AlterSql = lists:flatten(io_lib:format(
+                "ALTER TABLE ~s ADD COLUMN ~s ~s",
+                [Table, Column, TypeDef]
+            )),
+            esqlite3:exec(Db, AlterSql);
+        [[_N]] ->
+            ok
+    end.

@@ -7,6 +7,7 @@
 -dialyzer({nowarn_function, [init/1, terminate/2]}).
 
 -include_lib("evoq/include/evoq_types.hrl").
+-include_lib("guide_document_lifecycle/include/document_status.hrl").
 
 -record(state, {subscription_id :: binary() | undefined}).
 
@@ -49,9 +50,24 @@ project(Data) ->
     DocId = get_field(<<"document_id">>, document_id, Data),
     ArchivedAt = get_field(<<"archived_at">>, archived_at, Data),
     ArchivedAtBin = integer_to_binary(ArchivedAt),
-    Sql = "UPDATE documents SET status = status | 4, updated_at = ?1
-           WHERE document_id = ?2",
-    project_documents_store:execute(Sql, [ArchivedAtBin, DocId]).
+    NewStatus = current_status(DocId) bor ?DOC_ARCHIVED,
+    StatusLabel = evoq_bit_flags:to_string(NewStatus, ?DOC_FLAG_MAP),
+    Actions = json:encode(available_actions(NewStatus)),
+    Sql = "UPDATE documents SET status = ?1, status_label = ?2,
+           available_actions = ?3, updated_at = ?4 WHERE document_id = ?5",
+    project_documents_store:execute(Sql, [NewStatus, StatusLabel, Actions, ArchivedAtBin, DocId]).
+
+current_status(DocId) ->
+    case project_documents_store:query("SELECT status FROM documents WHERE document_id = ?1", [DocId]) of
+        {ok, [[Status]]} -> Status;
+        _ -> 0
+    end.
+
+available_actions(Status) ->
+    case evoq_bit_flags:has(Status, ?DOC_ARCHIVED) of
+        true  -> [];
+        false -> [<<"rename">>, <<"revise">>, <<"archive">>]
+    end.
 
 get_field(BinKey, AtomKey, Data) ->
     maps:get(BinKey, Data, maps:get(AtomKey, Data, undefined)).
