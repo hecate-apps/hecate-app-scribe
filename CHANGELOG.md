@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] - 2026-03-17
+
+### Fixed
+- Fix compile error: add missing `state_module/0` callback to `document_aggregate` (required by evoq 1.12.0)
+- Fix supervisor crash: unlink supervisor from plugin loader's temporary init process
+
 ## [0.2.0] - 2026-03-17
 
 ### Changed

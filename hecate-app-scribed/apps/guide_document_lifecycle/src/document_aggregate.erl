@@ -3,12 +3,14 @@
 
 -include("document_status.hrl").
 
--export([init/1, execute/2, apply/2]).
+-export([state_module/0, init/1, execute/2, apply/2]).
 -export([stream_id/1]).
 
 %% ===================================================================
 %% Evoq aggregate callbacks
 %% ===================================================================
+
+state_module() -> document_state.
 
 init(AggregateId) ->
     {ok, document_state:new(AggregateId)}.

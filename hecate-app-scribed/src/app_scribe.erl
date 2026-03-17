@@ -27,6 +27,11 @@ init(#{plugin_name := PluginName, store_id := StoreId, data_dir := DataDir}) ->
     %% Start domain supervisors
     case app_scribe_sup:start_link() of
         {ok, Pid} ->
+            %% CRITICAL: unlink supervisor from this process.
+            %% Plugin loader calls init/1 from a temporary spawned process.
+            %% OTP supervisors stop themselves when their parent exits.
+            %% Without unlink, the supervisor dies when the init process completes.
+            unlink(Pid),
             logger:info("[app-scribe] Supervision tree started (~p)", [Pid]),
             {ok, #{sup_pid => Pid}};
         {error, {already_started, Pid}} ->
@@ -62,7 +67,7 @@ manifest() ->
     #{
         name => <<"hecate-app-scribe">>,
         display_name => <<"Scribe">>,
-        version => <<"0.2.0">>,
+        version => <<"0.2.1">>,
         description => <<"Document editor plugin">>,
         icon => <<"pencil2">>,
         tag => <<"scribe-studio">>,
