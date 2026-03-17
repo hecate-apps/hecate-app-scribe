@@ -4,7 +4,7 @@
 handle_valid_test() ->
     Cmd = initiate_document_v1:new(<<"doc-1">>, <<"My Doc">>, <<"alice">>),
     {ok, [EventMap]} = maybe_initiate_document:handle(Cmd),
-    ?assertEqual(<<"document_initiated_v1">>, maps:get(event_type, EventMap)),
+    ?assertEqual(document_initiated_v1, maps:get(event_type, EventMap)),
     ?assertEqual(<<"doc-1">>, maps:get(document_id, EventMap)),
     ?assertEqual(<<"My Doc">>, maps:get(title, EventMap)),
     ?assertEqual(<<"alice">>, maps:get(owner, EventMap)),

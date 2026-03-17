@@ -1,6 +1,8 @@
 -module(initiate_document_v1).
+-behaviour(evoq_command).
 
--export([new/3, to_map/1, from_map/1]).
+-export([command_type/0]).
+-export([new/1, new/3, to_map/1, from_map/1]).
 
 -record(initiate_document_v1, {
     document_id :: binary(),
@@ -10,6 +12,11 @@
 
 -opaque initiate_document_v1() :: #initiate_document_v1{}.
 -export_type([initiate_document_v1/0]).
+
+command_type() -> initiate_document_v1.
+
+-spec new(map()) -> {ok, initiate_document_v1()} | {error, term()}.
+new(Params) -> from_map(Params).
 
 -spec new(binary(), binary(), binary()) -> initiate_document_v1().
 new(DocumentId, Title, Owner) ->
@@ -26,6 +33,7 @@ to_map(#initiate_document_v1{
     owner = Owner
 }) ->
     #{
+        command_type => initiate_document_v1,
         document_id => DocumentId,
         title => Title,
         owner => Owner

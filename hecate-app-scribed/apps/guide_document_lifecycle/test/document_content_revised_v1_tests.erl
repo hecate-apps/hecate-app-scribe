@@ -4,7 +4,7 @@
 new_test() ->
     Event = document_content_revised_v1:new(<<"doc-1">>, <<"body">>, <<"abc123">>, 7000),
     Map = document_content_revised_v1:to_map(Event),
-    ?assertEqual(<<"document_content_revised_v1">>, maps:get(event_type, Map)),
+    ?assertEqual(document_content_revised_v1, maps:get(event_type, Map)),
     ?assertEqual(<<"doc-1">>, maps:get(document_id, Map)),
     ?assertEqual(<<"body">>, maps:get(content_binary, Map)),
     ?assertEqual(<<"abc123">>, maps:get(content_hash, Map)),

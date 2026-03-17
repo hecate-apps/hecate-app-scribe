@@ -15,7 +15,7 @@ execute_initiate_test() ->
     Payload = #{command_type => initiate_document,
                 document_id => <<"doc-1">>, title => <<"Test">>, owner => <<"alice">>},
     {ok, [EventMap]} = document_aggregate:execute(State, Payload),
-    ?assertEqual(<<"document_initiated_v1">>, maps:get(event_type, EventMap)).
+    ?assertEqual(document_initiated_v1, maps:get(event_type, EventMap)).
 
 execute_initiate_duplicate_test() ->
     {ok, State0} = document_aggregate:init(<<"doc-1">>),
@@ -36,7 +36,7 @@ execute_rename_after_initiate_test() ->
     Payload = #{command_type => rename_document,
                 document_id => <<"doc-1">>, new_title => <<"New">>},
     {ok, [EventMap]} = document_aggregate:execute(State1, Payload),
-    ?assertEqual(<<"document_renamed_v1">>, maps:get(event_type, EventMap)).
+    ?assertEqual(document_renamed_v1, maps:get(event_type, EventMap)).
 
 execute_rename_before_initiate_test() ->
     {ok, State} = document_aggregate:init(<<"doc-1">>),
@@ -52,7 +52,7 @@ execute_archive_test() ->
     State1 = document_aggregate:apply(State0, InitEvent),
     Payload = #{command_type => archive_document, document_id => <<"doc-1">>},
     {ok, [EventMap]} = document_aggregate:execute(State1, Payload),
-    ?assertEqual(<<"document_archived_v1">>, maps:get(event_type, EventMap)).
+    ?assertEqual(document_archived_v1, maps:get(event_type, EventMap)).
 
 execute_archive_prevents_modify_test() ->
     {ok, State0} = document_aggregate:init(<<"doc-1">>),

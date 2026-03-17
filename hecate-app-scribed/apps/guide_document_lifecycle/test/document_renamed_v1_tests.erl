@@ -4,7 +4,7 @@
 new_test() ->
     Event = document_renamed_v1:new(<<"doc-1">>, <<"New">>, 5000),
     Map = document_renamed_v1:to_map(Event),
-    ?assertEqual(<<"document_renamed_v1">>, maps:get(event_type, Map)),
+    ?assertEqual(document_renamed_v1, maps:get(event_type, Map)),
     ?assertEqual(<<"doc-1">>, maps:get(document_id, Map)),
     ?assertEqual(<<"New">>, maps:get(new_title, Map)),
     ?assertEqual(5000, maps:get(renamed_at, Map)).

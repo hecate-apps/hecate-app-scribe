@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0] - 2026-03-17
+
+### Changed
+- Update hecate_sdk from 0.1.0 to 0.6.1
+- Update reckon_db from 1.3.3 to 1.6.0
+- Sync all version sources to 0.2.0
+- Update package.sh to include .app files alongside .beam files
+- Update min_sdk_version to 0.6.0
+
+### Added
+- scripts/bump-version.sh for automated version synchronization
+
 ## [0.1.6] - 2026-03-09
 
 ### Fixed

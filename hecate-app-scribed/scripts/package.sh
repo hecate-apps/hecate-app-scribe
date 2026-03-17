@@ -22,18 +22,29 @@ echo "==> Preparing package..."
 rm -rf "$STAGING_DIR"
 mkdir -p "$STAGING_DIR/ebin"
 
-## Consolidate all .beam files from root app + domain apps
-for ebin_dir in \
-    "$ROOT_DIR/_build/default/lib/hecate_app_scribed/ebin" \
-    "$ROOT_DIR/_build/default/lib/guide_document_lifecycle/ebin" \
-    "$ROOT_DIR/_build/default/lib/project_documents/ebin" \
-    "$ROOT_DIR/_build/default/lib/query_documents/ebin"; do
+## Consolidate all .beam and .app files from root app + domain apps
+DOMAIN_APPS=(
+    hecate_app_scribed
+    guide_document_lifecycle
+    project_documents
+    query_documents
+)
+
+BEAM_COUNT=0
+APP_COUNT=0
+for app in "${DOMAIN_APPS[@]}"; do
+    ebin_dir="$ROOT_DIR/_build/default/lib/$app/ebin"
     if [ -d "$ebin_dir" ]; then
-        cp "$ebin_dir"/*.beam "$STAGING_DIR/ebin/" 2>/dev/null || true
+        for f in "$ebin_dir"/*.beam; do
+            [ -f "$f" ] && cp "$f" "$STAGING_DIR/ebin/" && BEAM_COUNT=$((BEAM_COUNT + 1))
+        done
+        for f in "$ebin_dir"/*.app; do
+            [ -f "$f" ] && cp "$f" "$STAGING_DIR/ebin/" && APP_COUNT=$((APP_COUNT + 1))
+        done
     fi
 done
 
-echo "  $(find "$STAGING_DIR/ebin" -name '*.beam' | wc -l) .beam files"
+echo "  $BEAM_COUNT .beam files, $APP_COUNT .app files"
 
 ## Copy static assets if they exist
 STATIC_DIR="$ROOT_DIR/priv/static"

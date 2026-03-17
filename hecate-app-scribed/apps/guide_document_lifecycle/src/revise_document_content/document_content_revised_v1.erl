@@ -1,6 +1,8 @@
 -module(document_content_revised_v1).
+-behaviour(evoq_event).
 
--export([new/4, to_map/1, from_map/1]).
+-export([event_type/0]).
+-export([new/1, new/4, to_map/1, from_map/1]).
 
 -record(document_content_revised_v1, {
     document_id    :: binary(),
@@ -11,6 +13,13 @@
 
 -opaque document_content_revised_v1() :: #document_content_revised_v1{}.
 -export_type([document_content_revised_v1/0]).
+
+event_type() -> document_content_revised_v1.
+
+-spec new(map()) -> document_content_revised_v1().
+new(#{document_id := DocId, content_binary := Content,
+     content_hash := Hash, revised_at := RevisedAt}) ->
+    new(DocId, Content, Hash, RevisedAt).
 
 -spec new(binary(), binary(), binary(), integer()) -> document_content_revised_v1().
 new(DocumentId, ContentBinary, ContentHash, RevisedAt) ->
@@ -29,7 +38,7 @@ to_map(#document_content_revised_v1{
     revised_at = RevisedAt
 }) ->
     #{
-        event_type => <<"document_content_revised_v1">>,
+        event_type => document_content_revised_v1,
         document_id => DocId,
         content_binary => Content,
         content_hash => Hash,

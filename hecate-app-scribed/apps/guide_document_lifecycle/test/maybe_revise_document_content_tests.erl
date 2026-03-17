@@ -4,7 +4,7 @@
 handle_valid_test() ->
     Cmd = revise_document_content_v1:new(<<"doc-1">>, <<"{\"type\":\"doc\"}">>),
     {ok, [EventMap]} = maybe_revise_document_content:handle(Cmd),
-    ?assertEqual(<<"document_content_revised_v1">>, maps:get(event_type, EventMap)),
+    ?assertEqual(document_content_revised_v1, maps:get(event_type, EventMap)),
     ?assertEqual(<<"doc-1">>, maps:get(document_id, EventMap)),
     ?assertEqual(<<"{\"type\":\"doc\"}">>, maps:get(content_binary, EventMap)),
     ?assert(is_binary(maps:get(content_hash, EventMap))),
