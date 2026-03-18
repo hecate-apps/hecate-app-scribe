@@ -8,7 +8,10 @@
 -record(doc_state, {
     document_id  :: binary() | undefined,
     title        :: binary() | undefined,
+    folder_id    :: binary() | undefined,
+    file_id      :: binary() | undefined,
     owner        :: binary() | undefined,
+    starred      :: boolean(),
     status       :: non_neg_integer(),
     content_hash :: binary() | undefined,
     created_at   :: integer() | undefined,
@@ -20,7 +23,10 @@ new(_AggregateId) ->
     #doc_state{
         document_id = undefined,
         title = undefined,
+        folder_id = undefined,
+        file_id = undefined,
         owner = undefined,
+        starred = false,
         status = 0,
         content_hash = undefined,
         created_at = undefined,
@@ -42,7 +48,10 @@ apply_event(State, _) ->
 to_map(#doc_state{
     document_id = DocId,
     title = Title,
+    folder_id = FolderId,
+    file_id = FileId,
     owner = Owner,
+    starred = Starred,
     status = Status,
     content_hash = ContentHash,
     created_at = CreatedAt,
@@ -51,7 +60,10 @@ to_map(#doc_state{
     #{
         document_id => DocId,
         title => Title,
+        folder_id => FolderId,
+        file_id => FileId,
         owner => Owner,
+        starred => Starred,
         status => Status,
         content_hash => ContentHash,
         created_at => CreatedAt,
@@ -66,6 +78,8 @@ do_apply(<<"document_initiated_v1">>, State, Event) ->
     State#doc_state{
         document_id = get_field(<<"document_id">>, document_id, Event),
         title = get_field(<<"title">>, title, Event),
+        folder_id = get_field(<<"folder_id">>, folder_id, Event),
+        file_id = get_field(<<"file_id">>, file_id, Event),
         owner = get_field(<<"owner">>, owner, Event),
         created_at = get_field(<<"created_at">>, created_at, Event),
         updated_at = get_field(<<"created_at">>, created_at, Event),
@@ -90,6 +104,26 @@ do_apply(<<"document_archived_v1">>, State, Event) ->
     State#doc_state{
         updated_at = get_field(<<"archived_at">>, archived_at, Event),
         status = State#doc_state.status bor ?DOC_ARCHIVED
+    };
+
+do_apply(<<"document_moved_v1">>, State, Event) ->
+    State#doc_state{
+        folder_id = get_field(<<"folder_id">>, folder_id, Event),
+        updated_at = get_field(<<"moved_at">>, moved_at, Event),
+        status = State#doc_state.status bor ?DOC_MOVED
+    };
+
+do_apply(<<"document_starred_v1">>, State, Event) ->
+    State#doc_state{
+        starred = true,
+        updated_at = get_field(<<"starred_at">>, starred_at, Event),
+        status = State#doc_state.status bor ?DOC_STARRED
+    };
+
+do_apply(<<"document_unstarred_v1">>, State, Event) ->
+    State#doc_state{
+        starred = false,
+        updated_at = get_field(<<"unstarred_at">>, unstarred_at, Event)
     };
 
 do_apply(_UnknownType, State, _Event) ->

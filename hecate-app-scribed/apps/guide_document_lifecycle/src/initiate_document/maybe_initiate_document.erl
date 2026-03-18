@@ -12,18 +12,21 @@ handle_from_map(Payload) ->
     DocId = maps:get(document_id, Payload, maps:get(<<"document_id">>, Payload, undefined)),
     Title = maps:get(title, Payload, maps:get(<<"title">>, Payload, undefined)),
     Owner = maps:get(owner, Payload, maps:get(<<"owner">>, Payload, undefined)),
-    Cmd = initiate_document_v1:new(DocId, Title, Owner),
+    FolderId = maps:get(folder_id, Payload, maps:get(<<"folder_id">>, Payload, undefined)),
+    FileId = maps:get(file_id, Payload, maps:get(<<"file_id">>, Payload, undefined)),
+    Cmd = initiate_document_v1:new(DocId, Title, Owner, FolderId, FileId),
     handle(Cmd).
 
 -spec handle(initiate_document_v1:initiate_document_v1()) ->
     {ok, [map()]} | {error, term()}.
 handle(Command) ->
-    #{document_id := DocId, title := Title, owner := Owner}
+    #{document_id := DocId, title := Title, owner := Owner,
+      folder_id := FolderId, file_id := FileId}
         = initiate_document_v1:to_map(Command),
     case validate(DocId, Title, Owner) of
         ok ->
             CreatedAt = erlang:system_time(millisecond),
-            Event = document_initiated_v1:new(DocId, Title, Owner, CreatedAt),
+            Event = document_initiated_v1:new(DocId, Title, Owner, FolderId, FileId, CreatedAt),
             {ok, [document_initiated_v1:to_map(Event)]};
         {error, Reason} ->
             {error, Reason}

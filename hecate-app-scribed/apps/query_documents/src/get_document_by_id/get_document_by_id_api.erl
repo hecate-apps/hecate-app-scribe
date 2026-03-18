@@ -2,23 +2,16 @@
 -export([handle_get/3]).
 
 handle_get(DocId, Req0, _State) ->
-    Sql = "SELECT document_id, title, owner, status, content_size, status_label, available_actions, created_at, updated_at
-           FROM documents WHERE document_id = ?1",
-    case project_documents_store:query(Sql, [DocId]) of
-        {ok, [[DId, Title, Owner, Status, ContentSize, StatusLabel, ActionsJson, CreatedAt, UpdatedAt]]} ->
-            app_scribed_api_utils:json_ok(#{
-                document_id => DId,
-                title => Title,
-                owner => Owner,
-                status => Status,
-                content_size => ContentSize,
-                status_label => StatusLabel,
-                available_actions => json:decode(ActionsJson),
-                created_at => CreatedAt,
-                updated_at => UpdatedAt
-            }, Req0);
-        {ok, []} ->
-            app_scribed_api_utils:not_found(Req0);
-        {error, Reason} ->
-            app_scribed_api_utils:json_error(500, Reason, Req0)
+    %% Support lookup by file_id via query param: ?file_id=true
+    Result = case cowboy_req:match_qs([{file_id, [], undefined}], Req0) of
+        #{file_id := <<"true">>} ->
+            project_documents_store:get_document_by_file_id(DocId);
+        _ ->
+            project_documents_store:get_document(DocId)
+    end,
+    case Result of
+        {ok, Doc} ->
+            app_scribed_api_utils:json_ok(Doc, Req0);
+        {error, not_found} ->
+            app_scribed_api_utils:not_found(Req0)
     end.

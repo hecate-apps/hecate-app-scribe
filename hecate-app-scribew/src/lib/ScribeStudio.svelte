@@ -3,47 +3,83 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { setApi, type PluginApi } from './shared/api.js';
-	import DocumentList from './documents/DocumentList.svelte';
 	import ScribeEditor from './editor/ScribeEditor.svelte';
+	import { getDocument, createDocument } from './documents/documents.js';
 
-	let { api }: { api: PluginApi } = $props();
+	let { api, fileId }: { api: PluginApi; fileId?: string } = $props();
 
-	let selectedDocId = $state<string | null>(null);
-	let docListRef = $state<DocumentList | null>(null);
+	let documentId = $state<string | null>(null);
+	let loading = $state(true);
+	let error = $state<string | null>(null);
 
-	onMount(() => {
+	onMount(async () => {
 		setApi(api);
+		await resolveDocument();
 	});
 
-	function handleSelect(id: string) {
-		selectedDocId = id;
-	}
+	async function resolveDocument() {
+		loading = true;
+		error = null;
 
-	function handleBack() {
-		selectedDocId = null;
-	}
+		// If file_id provided (from Briefcase), use it as document_id
+		if (fileId) {
+			try {
+				// Check if document already exists in scribe's store
+				await getDocument(fileId);
+				documentId = fileId;
+			} catch {
+				// Document doesn't exist yet — create it with the briefcase file_id
+				try {
+					await createDocument('Untitled Document', fileId);
+					documentId = fileId;
+				} catch (e) {
+					error = e instanceof Error ? e.message : 'Failed to initialize document';
+				}
+			}
+		} else {
+			error = 'no_file_id';
+		}
 
-	function handleTitleChange() {
-		docListRef?.refresh();
+		loading = false;
 	}
 </script>
 
 <div class="flex h-full bg-zinc-950 text-zinc-200">
-	{#if selectedDocId}
-		<div class="w-64 border-r border-zinc-800 flex-shrink-0 flex flex-col">
-			<button onclick={handleBack} class="px-3 py-2 text-xs text-zinc-400 hover:text-zinc-200 text-left border-b border-zinc-800">
-				&#8592; Back to list
-			</button>
-			<DocumentList bind:this={docListRef} onSelect={handleSelect} />
+	{#if loading}
+		<div class="flex-1 flex items-center justify-center">
+			<div class="text-center text-zinc-500">
+				<div class="text-2xl mb-2 animate-pulse">{'\u270F\uFE0F'}</div>
+				<div class="text-sm">Loading document...</div>
+			</div>
 		</div>
+	{:else if error === 'no_file_id'}
+		<div class="flex-1 flex items-center justify-center">
+			<div class="text-center text-zinc-400 max-w-sm space-y-3">
+				<div class="text-3xl">{'\uD83D\uDCBC'}</div>
+				<p class="text-sm">Open a document from Briefcase to start editing.</p>
+				<p class="text-xs text-zinc-500">
+					Go to Briefcase, create a new document, and click it to open in Scribe.
+				</p>
+			</div>
+		</div>
+	{:else if error}
+		<div class="flex-1 flex items-center justify-center">
+			<div class="text-center text-red-400 max-w-sm space-y-3">
+				<div class="text-3xl">{'\u26A0\uFE0F'}</div>
+				<p class="text-sm">{error}</p>
+				<button
+					onclick={resolveDocument}
+					class="px-4 py-2 rounded text-xs bg-indigo-600 text-white hover:bg-indigo-500 cursor-pointer"
+				>
+					Retry
+				</button>
+			</div>
+		</div>
+	{:else if documentId}
 		<div class="flex-1 flex flex-col min-w-0">
-			{#key selectedDocId}
-				<ScribeEditor documentId={selectedDocId} onTitleChange={handleTitleChange} />
+			{#key documentId}
+				<ScribeEditor {documentId} />
 			{/key}
-		</div>
-	{:else}
-		<div class="flex-1">
-			<DocumentList onSelect={handleSelect} />
 		</div>
 	{/if}
 </div>

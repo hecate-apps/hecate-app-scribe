@@ -2,25 +2,9 @@
 -export([handle_get/2]).
 
 handle_get(Req0, _State) ->
-    Sql = "SELECT document_id, title, owner, status, content_size, status_label, available_actions, created_at, updated_at
-           FROM documents WHERE status & 4 = 0 ORDER BY updated_at DESC",
-    case project_documents_store:query(Sql) of
-        {ok, Rows} ->
-            Documents = lists:map(fun row_to_map/1, Rows),
+    case project_documents_store:list_documents() of
+        {ok, Documents} ->
             app_scribed_api_utils:json_ok(#{documents => Documents}, Req0);
         {error, Reason} ->
             app_scribed_api_utils:json_error(500, Reason, Req0)
     end.
-
-row_to_map([DocId, Title, Owner, Status, ContentSize, StatusLabel, ActionsJson, CreatedAt, UpdatedAt]) ->
-    #{
-        document_id => DocId,
-        title => Title,
-        owner => Owner,
-        status => Status,
-        content_size => ContentSize,
-        status_label => StatusLabel,
-        available_actions => json:decode(ActionsJson),
-        created_at => CreatedAt,
-        updated_at => UpdatedAt
-    }.

@@ -10,11 +10,10 @@ export async function getDocument(id: string): Promise<Document> {
 	return getApi().get<Document & { ok: boolean }>(`/documents/${id}`);
 }
 
-export async function createDocument(title: string): Promise<string> {
-	const resp = await getApi().post<{ document_id: string }>('/documents', {
-		title,
-		owner: 'local'
-	});
+export async function createDocument(title: string, fileId?: string): Promise<string> {
+	const body: Record<string, string> = { title, owner: 'local' };
+	if (fileId) body.file_id = fileId;
+	const resp = await getApi().post<{ document_id: string }>('/documents', body);
 	return resp.document_id;
 }
 

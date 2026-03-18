@@ -5,6 +5,8 @@
     {mod, {query_documents_app, []}},
     {applications, [
         kernel, stdlib,
+        evoq,
+        guide_document_lifecycle,
         project_documents
     ]},
     {env, []},

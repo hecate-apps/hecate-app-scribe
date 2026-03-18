@@ -2,12 +2,14 @@
 -behaviour(evoq_command).
 
 -export([command_type/0]).
--export([new/1, new/3, to_map/1, from_map/1]).
+-export([new/1, new/3, new/4, new/5, to_map/1, from_map/1]).
 
 -record(initiate_document_v1, {
     document_id :: binary(),
     title       :: binary(),
-    owner       :: binary()
+    owner       :: binary(),
+    folder_id   :: binary() | undefined,
+    file_id     :: binary() | undefined
 }).
 
 -opaque initiate_document_v1() :: #initiate_document_v1{}.
@@ -20,27 +22,43 @@ new(Params) -> from_map(Params).
 
 -spec new(binary(), binary(), binary()) -> initiate_document_v1().
 new(DocumentId, Title, Owner) ->
+    new(DocumentId, Title, Owner, undefined, undefined).
+
+-spec new(binary(), binary(), binary(), binary() | undefined) -> initiate_document_v1().
+new(DocumentId, Title, Owner, FolderId) ->
+    new(DocumentId, Title, Owner, FolderId, undefined).
+
+-spec new(binary(), binary(), binary(), binary() | undefined, binary() | undefined) -> initiate_document_v1().
+new(DocumentId, Title, Owner, FolderId, FileId) ->
     #initiate_document_v1{
         document_id = DocumentId,
         title = Title,
-        owner = Owner
+        owner = Owner,
+        folder_id = FolderId,
+        file_id = FileId
     }.
 
 -spec to_map(initiate_document_v1()) -> map().
 to_map(#initiate_document_v1{
     document_id = DocumentId,
     title = Title,
-    owner = Owner
+    owner = Owner,
+    folder_id = FolderId,
+    file_id = FileId
 }) ->
     #{
         command_type => initiate_document_v1,
         document_id => DocumentId,
         title => Title,
-        owner => Owner
+        owner => Owner,
+        folder_id => FolderId,
+        file_id => FileId
     }.
 
 -spec from_map(map()) -> {ok, initiate_document_v1()} | {error, term()}.
-from_map(#{document_id := DocId, title := Title, owner := Owner}) ->
-    {ok, new(DocId, Title, Owner)};
+from_map(#{document_id := DocId, title := Title, owner := Owner} = Map) ->
+    FolderId = maps:get(folder_id, Map, undefined),
+    FileId = maps:get(file_id, Map, undefined),
+    {ok, new(DocId, Title, Owner, FolderId, FileId)};
 from_map(_) ->
     {error, invalid_initiate_document_command}.

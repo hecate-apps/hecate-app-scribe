@@ -7,6 +7,15 @@
   "callback_module": "app_scribe",
   "plugin_type": "in_vm",
   "tag": "scribe-studio",
+  "file_types": [
+    {
+      "type": "scribe",
+      "label": "Document",
+      "icon": "pencil2",
+      "can_create": true,
+      "import_extensions": [".md", ".txt", ".html"]
+    }
+  ],
   "trust_level": "untrusted",
   "permissions": [],
   "repository": "https://github.com/hecate-apps/hecate-app-scribe",

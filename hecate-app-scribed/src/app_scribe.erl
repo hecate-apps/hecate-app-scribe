@@ -67,11 +67,20 @@ manifest() ->
     #{
         name => <<"hecate-app-scribe">>,
         display_name => <<"Scribe">>,
-        version => <<"0.2.1">>,
+        version => <<"0.3.0">>,
         description => <<"Document editor plugin">>,
         icon => <<"pencil2">>,
         tag => <<"scribe-studio">>,
-        min_sdk_version => <<"0.6.0">>
+        min_sdk_version => <<"0.6.0">>,
+        file_types => [
+            #{
+                type => <<"scribe">>,
+                label => <<"Document">>,
+                icon => <<"pencil2">>,
+                can_create => true,
+                import_extensions => [<<".md">>, <<".txt">>, <<".html">>]
+            }
+        ]
     }.
 
 -spec flag_maps() -> #{binary() => evoq_bit_flags:flag_map()}.

@@ -1,7 +1,7 @@
 %%% @doc Top-level supervisor for the Scribe in-VM plugin.
 %%%
 %%% Supervises domain application supervisors:
-%%%   - project_documents_sup (PRJ — SQLite read model + projections)
+%%%   - project_documents_sup (PRJ — ETS read model + merged projection)
 %%%   - guide_document_lifecycle_sup (CMD — currently empty, reserved)
 %%%   - query_documents_sup (QRY — currently empty, reserved)
 %%% @end

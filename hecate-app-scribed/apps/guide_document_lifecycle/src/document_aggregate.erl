@@ -62,6 +62,34 @@ do_execute(archive_document, State, Payload) ->
         _ -> {error, already_archived}
     end;
 
+do_execute(move_document, State, Payload) ->
+    case can_modify(State) of
+        true -> maybe_move_document:handle_from_map(Payload);
+        false -> {error, document_not_modifiable}
+    end;
+
+do_execute(star_document, State, Payload) ->
+    case can_modify(State) of
+        true ->
+            #{starred := Starred} = document_state:to_map(State),
+            case Starred of
+                true -> {error, already_starred};
+                false -> maybe_star_document:handle_from_map(Payload)
+            end;
+        false -> {error, document_not_modifiable}
+    end;
+
+do_execute(unstar_document, State, Payload) ->
+    case can_modify(State) of
+        true ->
+            #{starred := Starred} = document_state:to_map(State),
+            case Starred of
+                false -> {error, not_starred};
+                true -> maybe_unstar_document:handle_from_map(Payload)
+            end;
+        false -> {error, document_not_modifiable}
+    end;
+
 do_execute(_Unknown, _State, _Payload) ->
     {error, unknown_command}.
 
