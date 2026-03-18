@@ -1,6 +1,6 @@
 {application, guide_document_lifecycle, [
     {description, "Document lifecycle CMD: initiate, rename, revise, archive"},
-    {vsn, "0.3.0"},
+    {vsn, "0.4.0"},
     {registered, [guide_document_lifecycle_sup]},
     {mod, {guide_document_lifecycle_app, []}},
     {applications, [
