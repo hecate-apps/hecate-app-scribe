@@ -78,7 +78,7 @@
 	{:else if documentId}
 		<div class="flex-1 flex flex-col min-w-0">
 			{#key documentId}
-				<ScribeEditor {documentId} fileId={fileId} />
+				<ScribeEditor {documentId} />
 			{/key}
 		</div>
 	{/if}
