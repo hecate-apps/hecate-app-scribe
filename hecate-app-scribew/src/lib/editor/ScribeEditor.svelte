@@ -7,8 +7,9 @@
 	import Toolbar from './toolbar/Toolbar.svelte';
 	import { saveDocumentContent, getDocumentContent, getDocument, renameDocument } from '../documents/documents.js';
 
-	let { documentId, onTitleChange }: {
+	let { documentId, fileId, onTitleChange }: {
 		documentId: string;
+		fileId?: string;
 		onTitleChange?: (title: string) => void;
 	} = $props();
 
@@ -81,6 +82,14 @@
 			await renameDocument(documentId, newTitle);
 			title = newTitle;
 			onTitleChange?.(newTitle);
+			// Sync name back to Briefcase file index
+			if (fileId) {
+				fetch(`/api/briefcase/files/${encodeURIComponent(fileId)}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ name: newTitle }),
+				}).catch(() => {}); // best-effort, don't block editor
+			}
 		} catch (e) {
 			console.error('[scribe] Failed to rename:', e);
 		}
