@@ -12,6 +12,10 @@ handle_put(DocId, Req0, _State) ->
                     Cmd = rename_document_v1:new(DocId, NewTitle),
                     case maybe_rename_document:dispatch(DocId, Cmd) of
                         {ok, _Version, _Events} ->
+                            %% Sync name to Briefcase (synchronous, same BEAM VM)
+                            try briefcase_api:rename_item(DocId, NewTitle)
+                            catch _:_ -> ok  %% best-effort if briefcase not available
+                            end,
                             app_scribed_api_utils:json_ok(#{
                                 document_id => DocId,
                                 title => NewTitle

@@ -6,7 +6,7 @@
 	import ScribeEditor from './editor/ScribeEditor.svelte';
 	import { getDocument, createDocument } from './documents/documents.js';
 
-	let { api, fileId }: { api: PluginApi; fileId?: string } = $props();
+	let { api, itemId }: { api: PluginApi; itemId?: string } = $props();
 
 	let documentId = $state<string | null>(null);
 	let loading = $state(true);
@@ -21,23 +21,23 @@
 		loading = true;
 		error = null;
 
-		// If file_id provided (from Briefcase), use it as document_id
-		if (fileId) {
+		// If item_id provided (from Briefcase), use it as document_id
+		if (itemId) {
 			try {
 				// Check if document already exists in scribe's store
-				await getDocument(fileId);
-				documentId = fileId;
+				await getDocument(itemId);
+				documentId = itemId;
 			} catch {
-				// Document doesn't exist yet — create it with the briefcase file_id
+				// Document doesn't exist yet — create it with the briefcase item_id
 				try {
-					await createDocument('Untitled Document', fileId);
-					documentId = fileId;
+					await createDocument('Untitled Document', itemId);
+					documentId = itemId;
 				} catch (e) {
 					error = e instanceof Error ? e.message : 'Failed to initialize document';
 				}
 			}
 		} else {
-			error = 'no_file_id';
+			error = 'no_item_id';
 		}
 
 		loading = false;
@@ -52,7 +52,7 @@
 				<div class="text-sm">Loading document...</div>
 			</div>
 		</div>
-	{:else if error === 'no_file_id'}
+	{:else if error === 'no_item_id'}
 		<div class="flex-1 flex items-center justify-center">
 			<div class="text-center text-zinc-400 max-w-sm space-y-3">
 				<div class="text-3xl">{'\uD83D\uDCBC'}</div>
