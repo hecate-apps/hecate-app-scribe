@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { Editor } from '@tiptap/core';
+	import * as Y from 'yjs';
 	import { createExtensions } from './extensions.js';
 	import Toolbar from './toolbar/Toolbar.svelte';
 	import { saveDocumentContent, getDocumentContent, getDocument, renameDocument } from '../documents/documents.js';
@@ -17,16 +18,61 @@
 	let saving = $state(false);
 	let charCount = $state(0);
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+	let ydoc: Y.Doc | null = null;
 
 	let title = $state('');
 	let editingTitle = $state(false);
 	let titleInput = $state('');
 
 	onMount(async () => {
+		await loadDocument();
+	});
+
+	onDestroy(() => {
+		if (saveTimeout) clearTimeout(saveTimeout);
+		editor?.destroy();
+		ydoc?.destroy();
+	});
+
+	async function loadDocument() {
+		// Load title
+		try {
+			const doc = await getDocument(documentId);
+			title = doc.title;
+		} catch (e) {
+			console.error('[scribe] Failed to load document:', e);
+		}
+
+		// Create Y.Doc and apply saved state
+		ydoc = new Y.Doc();
+
+		try {
+			const data = await getDocumentContent(documentId);
+			if (data.content && data.content !== '{}' && data.content !== '') {
+				try {
+					// Try as base64 Y.js state first (v0.3.0+ format)
+					const binary = base64ToUint8Array(data.content);
+					Y.applyUpdate(ydoc, binary);
+				} catch {
+					// Fall back to TipTap JSON (v0.2.x legacy)
+					const parsed = JSON.parse(data.content);
+					// Initialize editor with JSON content, Y.js will pick it up
+					initEditor(ydoc, parsed);
+					return;
+				}
+			}
+		} catch (e) {
+			console.error('[scribe] Failed to load content:', e);
+		}
+
+		initEditor(ydoc, null);
+	}
+
+	function initEditor(doc: Y.Doc, initialContent: any) {
 		editor = new Editor({
 			element: editorElement,
-			extensions: createExtensions(),
-			content: '',
+			extensions: createExtensions(doc),
+			content: initialContent ?? '',
 			editorProps: {
 				attributes: {
 					class: 'prose prose-invert max-w-none p-4 min-h-[400px] focus:outline-none'
@@ -37,35 +83,6 @@
 				scheduleSave();
 			}
 		});
-
-		await loadDocument();
-	});
-
-	onDestroy(() => {
-		if (saveTimeout) clearTimeout(saveTimeout);
-		editor?.destroy();
-	});
-
-	async function loadDocument() {
-		try {
-			const doc = await getDocument(documentId);
-			title = doc.title;
-		} catch (e) {
-			console.error('[scribe] Failed to load document:', e);
-		}
-		await loadContent();
-	}
-
-	async function loadContent() {
-		try {
-			const data = await getDocumentContent(documentId);
-			if (data.content && data.content !== '{}' && data.content !== '') {
-				const parsed = JSON.parse(data.content);
-				editor?.commands.setContent(parsed);
-			}
-		} catch (e) {
-			console.error('[scribe] Failed to load content:', e);
-		}
 	}
 
 	function startTitleEdit() {
@@ -97,16 +114,36 @@
 	}
 
 	async function doSave() {
-		if (!editor || saving) return;
+		if (!ydoc || saving) return;
 		saving = true;
 		try {
-			const json = JSON.stringify(editor.getJSON());
-			await saveDocumentContent(documentId, json);
+			const state = Y.encodeStateAsUpdate(ydoc);
+			const base64 = uint8ArrayToBase64(state);
+			await saveDocumentContent(documentId, base64);
 		} catch (e) {
 			console.error('[scribe] Failed to save:', e);
 		} finally {
 			saving = false;
 		}
+	}
+
+	// --- Base64 helpers ---
+
+	function uint8ArrayToBase64(bytes: Uint8Array): string {
+		let binary = '';
+		for (let i = 0; i < bytes.byteLength; i++) {
+			binary += String.fromCharCode(bytes[i]);
+		}
+		return btoa(binary);
+	}
+
+	function base64ToUint8Array(base64: string): Uint8Array {
+		const binary = atob(base64);
+		const bytes = new Uint8Array(binary.length);
+		for (let i = 0; i < binary.length; i++) {
+			bytes[i] = binary.charCodeAt(i);
+		}
+		return bytes;
 	}
 </script>
 
