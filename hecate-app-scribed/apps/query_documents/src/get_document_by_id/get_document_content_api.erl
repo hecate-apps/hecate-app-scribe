@@ -38,17 +38,20 @@ extract_last_content([], Acc) ->
 extract_last_content([Event | Rest], Acc) ->
     EventType = get_event_type(Event),
     case EventType of
-        <<"document_content_revised_v1">> ->
+        T when T =:= <<"document_content_revised_v1">>; T =:= <<"document_flushed_v1">> ->
             Data = maps:get(data, Event, Event),
             Content = gf(content_binary, Data),
             Hash = gf(content_hash, Data),
-            RevisedAt = gf(revised_at, Data),
-            RevisedAtBin = case RevisedAt of
+            Ts = case T of
+                <<"document_flushed_v1">> -> gf(flushed_at, Data);
+                _ -> gf(revised_at, Data)
+            end,
+            TsBin = case Ts of
                 R when is_integer(R) -> integer_to_binary(R);
                 R when is_binary(R) -> R;
                 _ -> <<>>
             end,
-            extract_last_content(Rest, {Content, Hash, RevisedAtBin});
+            extract_last_content(Rest, {Content, Hash, TsBin});
         _ ->
             extract_last_content(Rest, Acc)
     end.

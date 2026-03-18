@@ -7,7 +7,7 @@ init(Req0, State) ->
         <<"GET">> ->
             get_document_content_api:handle_get(DocId, Req0, State);
         <<"PUT">> ->
-            revise_document_content_api:handle_put(DocId, Req0, State);
+            flush_document_api:handle_put(DocId, Req0, State);
         _ ->
             app_scribed_api_utils:method_not_allowed(Req0)
     end.

@@ -100,6 +100,13 @@ do_apply(<<"document_content_revised_v1">>, State, Event) ->
         status = State#doc_state.status bor ?DOC_REVISED
     };
 
+do_apply(<<"document_flushed_v1">>, State, Event) ->
+    State#doc_state{
+        content_hash = get_field(<<"content_hash">>, content_hash, Event),
+        updated_at = get_field(<<"flushed_at">>, flushed_at, Event),
+        status = State#doc_state.status bor ?DOC_REVISED
+    };
+
 do_apply(<<"document_archived_v1">>, State, Event) ->
     State#doc_state{
         updated_at = get_field(<<"archived_at">>, archived_at, Event),

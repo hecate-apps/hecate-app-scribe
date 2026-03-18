@@ -32,8 +32,9 @@
 				try {
 					await createDocument('Untitled Document', itemId);
 					documentId = itemId;
-				} catch (e) {
-					error = e instanceof Error ? e.message : 'Failed to initialize document';
+				} catch {
+					// "already_initiated" is fine — just open it
+					documentId = itemId;
 				}
 			}
 		} else {

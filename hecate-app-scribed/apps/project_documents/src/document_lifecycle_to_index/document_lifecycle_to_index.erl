@@ -34,6 +34,7 @@ interested_in() ->
      <<"document_starred_v1">>,
      <<"document_unstarred_v1">>,
      <<"document_content_revised_v1">>,
+     <<"document_flushed_v1">>,
      <<"document_archived_v1">>].
 
 init(_Config) ->
@@ -172,6 +173,32 @@ do_project(<<"document_content_revised_v1">>, Data, State, RM) ->
                 status_label   => evoq_bit_flags:to_string(NewStatus, ?DOC_FLAG_MAP),
                 available_actions => available_actions(NewStatus),
                 updated_at     => gf(revised_at, Data)
+            },
+            {ok, RM2} = evoq_read_model:put(DocId, Updated, RM),
+            {ok, State, RM2};
+        {error, not_found} ->
+            {skip, State, RM}
+    end;
+
+%% --- document_flushed_v1: UPDATE content_hash and content_size only ---
+
+do_project(<<"document_flushed_v1">>, Data, State, RM) ->
+    DocId = gf(document_id, Data),
+    case evoq_read_model:get(DocId, RM) of
+        {ok, #{status := S} = Doc} ->
+            ContentBinary = gf(content_binary, Data),
+            ContentSize = case ContentBinary of
+                B when is_binary(B) -> byte_size(B);
+                _ -> 0
+            end,
+            NewStatus = S bor ?DOC_REVISED,
+            Updated = Doc#{
+                content_hash   => gf(content_hash, Data),
+                content_size   => ContentSize,
+                status         => NewStatus,
+                status_label   => evoq_bit_flags:to_string(NewStatus, ?DOC_FLAG_MAP),
+                available_actions => available_actions(NewStatus),
+                updated_at     => gf(flushed_at, Data)
             },
             {ok, RM2} = evoq_read_model:put(DocId, Updated, RM),
             {ok, State, RM2};
