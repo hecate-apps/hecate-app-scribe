@@ -57,9 +57,9 @@
 		<div class="flex-1 flex items-center justify-center">
 			<div class="text-center text-zinc-400 max-w-sm space-y-3">
 				<div class="text-3xl">{'\uD83D\uDCBC'}</div>
-				<p class="text-sm">Open a document from Briefcase to start editing.</p>
+				<p class="text-sm">Open a document from <a href="/briefcase" class="text-indigo-400 hover:text-indigo-300 underline">Briefcase</a> to start editing.</p>
 				<p class="text-xs text-zinc-500">
-					Go to Briefcase, create a new document, and click it to open in Scribe.
+					Go to <a href="/briefcase" class="text-indigo-400/70 hover:text-indigo-300 underline">Briefcase</a>, create a new document, and click it to open in Scribe.
 				</p>
 			</div>
 		</div>
