@@ -1,6 +1,6 @@
 {application, query_documents, [
     {description, "QRY service: document read-only API endpoints"},
-    {vsn, "0.4.2"},
+    {vsn, "0.4.3"},
     {registered, []},
     {mod, {query_documents_app, []}},
     {applications, [
