@@ -4,9 +4,6 @@ set -euo pipefail
 # Bump version across all Scribe artifacts:
 #   - manifest.json
 #   - hecate-app-scribed/src/hecate_app_scribed.app.src
-#   - hecate-app-scribed/apps/guide_document_lifecycle/src/guide_document_lifecycle.app.src
-#   - hecate-app-scribed/apps/project_documents/src/project_documents.app.src
-#   - hecate-app-scribed/apps/query_documents/src/query_documents.app.src
 #   - hecate-app-scribed/src/app_scribe.erl (manifest/0 version)
 #   - hecate-app-scribed/rebar.config (relx release)
 #   - hecate-app-scribew/package.json
@@ -16,13 +13,12 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
 if [[ $# -ne 1 ]]; then
     echo "Usage: $0 <new-version>"
-    echo "Example: $0 0.3.0"
+    echo "Example: $0 1.2.0"
     exit 1
 fi
 
 NEW_VERSION="$1"
 
-# Validate semver format
 if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "Error: Version must be semver (X.Y.Z), got: $NEW_VERSION"
     exit 1
@@ -30,39 +26,42 @@ fi
 
 echo "Bumping to version $NEW_VERSION"
 
-# 1. manifest.json
-MANIFEST="$REPO_ROOT/manifest.json"
-sed -i "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$MANIFEST"
-echo "  Updated $MANIFEST"
+bump_file() {
+    local file="$1"
+    local pattern="$2"
+    local replacement="$3"
+    if [[ -f "$file" ]]; then
+        sed -i "s|$pattern|$replacement|" "$file"
+        echo "  Updated $file"
+    fi
+}
 
-# 2. Root app.src
-APP_SRC="$REPO_ROOT/hecate-app-scribed/src/hecate_app_scribed.app.src"
-sed -i "s/{vsn, \"[0-9]*\.[0-9]*\.[0-9]*\"}/{vsn, \"$NEW_VERSION\"}/" "$APP_SRC"
-echo "  Updated $APP_SRC"
+# manifest.json
+bump_file "$REPO_ROOT/manifest.json" \
+    '"version": "[0-9]*\.[0-9]*\.[0-9]*"' \
+    "\"version\": \"$NEW_VERSION\""
 
-# 3. Domain app.src files
-for APP_SRC_FILE in \
-    "$REPO_ROOT/hecate-app-scribed/apps/guide_document_lifecycle/src/guide_document_lifecycle.app.src" \
-    "$REPO_ROOT/hecate-app-scribed/apps/project_documents/src/project_documents.app.src" \
-    "$REPO_ROOT/hecate-app-scribed/apps/query_documents/src/query_documents.app.src"; do
-    sed -i "s/{vsn, \"[0-9]*\.[0-9]*\.[0-9]*\"}/{vsn, \"$NEW_VERSION\"}/" "$APP_SRC_FILE"
-    echo "  Updated $APP_SRC_FILE"
-done
+# Root app.src
+bump_file "$REPO_ROOT/hecate-app-scribed/src/hecate_app_scribed.app.src" \
+    '{vsn, "[0-9]*\.[0-9]*\.[0-9]*"}' \
+    "{vsn, \"$NEW_VERSION\"}"
 
-# 4. app_scribe.erl — version => <<"X.Y.Z">> (only version, not min_sdk_version)
+# app_scribe.erl — version => <<"X.Y.Z">> (only the line starting with spaces+version)
 CALLBACK="$REPO_ROOT/hecate-app-scribed/src/app_scribe.erl"
-sed -i "s/^\( *version => <<\"\)[0-9]*\.[0-9]*\.[0-9]*/\1$NEW_VERSION/" "$CALLBACK"
-echo "  Updated $CALLBACK"
+if [[ -f "$CALLBACK" ]]; then
+    sed -i "/min_sdk_version/!s/version => <<\"[0-9]*\.[0-9]*\.[0-9]*\">>/version => <<\"$NEW_VERSION\">>/" "$CALLBACK"
+    echo "  Updated $CALLBACK"
+fi
 
-# 5. rebar.config — {release, {hecate_app_scribed, "X.Y.Z"}
-REBAR_CONFIG="$REPO_ROOT/hecate-app-scribed/rebar.config"
-sed -i "s/{release, {hecate_app_scribed, \"[0-9]*\.[0-9]*\.[0-9]*\"}/{release, {hecate_app_scribed, \"$NEW_VERSION\"}/" "$REBAR_CONFIG"
-echo "  Updated $REBAR_CONFIG"
+# rebar.config
+bump_file "$REPO_ROOT/hecate-app-scribed/rebar.config" \
+    '{release, {hecate_app_scribed, "[0-9]*\.[0-9]*\.[0-9]*"}' \
+    "{release, {hecate_app_scribed, \"$NEW_VERSION\"}"
 
-# 6. package.json
-PACKAGE_JSON="$REPO_ROOT/hecate-app-scribew/package.json"
-sed -i "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$PACKAGE_JSON"
-echo "  Updated $PACKAGE_JSON"
+# package.json
+bump_file "$REPO_ROOT/hecate-app-scribew/package.json" \
+    '"version": "[0-9]*\.[0-9]*\.[0-9]*"' \
+    "\"version\": \"$NEW_VERSION\""
 
 echo ""
 echo "Version bumped to $NEW_VERSION in all artifacts."
