@@ -25,7 +25,7 @@ init(#{plugin_name := PluginName, data_dir := DataDir}) ->
 -spec routes() -> [{string(), module(), term()}].
 routes() ->
     [
-        {"/content/:item_id", document_content_api, []}
+        {"/info", scribe_info_api, []}
     ].
 
 -spec store_config() -> none.
