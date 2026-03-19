@@ -110,8 +110,6 @@
 		if (e.key === 'Escape') editingTitle = false;
 	}
 
-	let lastSavedHash = '';
-
 	function scheduleSave() {
 		if (saveTimeout) clearTimeout(saveTimeout);
 		saveTimeout = setTimeout(() => doSave(), 2000);
@@ -119,26 +117,15 @@
 
 	async function doSave() {
 		if (!ydoc || saving) return;
-
-		const state = Y.encodeStateAsUpdate(ydoc);
-		const hash = await hashBytes(state);
-
-		if (hash === lastSavedHash) return;
-
 		saving = true;
 		try {
+			const state = Y.encodeStateAsUpdate(ydoc);
 			await saveDocumentContent(documentId, uint8ArrayToBase64(state));
-			lastSavedHash = hash;
 		} catch (e) {
 			console.error('[scribe] Failed to save:', e);
 		} finally {
 			saving = false;
 		}
-	}
-
-	async function hashBytes(bytes: Uint8Array): Promise<string> {
-		const digest = await crypto.subtle.digest('SHA-256', bytes.buffer as ArrayBuffer);
-		return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
 	}
 
 	// --- Base64 helpers ---
