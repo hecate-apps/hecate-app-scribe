@@ -4,7 +4,7 @@
 new_test() ->
     Event = document_archived_v1:new(<<"doc-1">>, 9000),
     Map = document_archived_v1:to_map(Event),
-    ?assertEqual(document_archived_v1, maps:get(event_type, Map)),
+    ?assertEqual(<<"document_archived_v1">>, maps:get(event_type, Map)),
     ?assertEqual(<<"doc-1">>, maps:get(document_id, Map)),
     ?assertEqual(9000, maps:get(archived_at, Map)).
 

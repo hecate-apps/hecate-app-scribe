@@ -25,7 +25,7 @@ new(DocumentId, UnstarredAt) ->
 -spec to_map(document_unstarred_v1()) -> map().
 to_map(#document_unstarred_v1{document_id = DocId, unstarred_at = UnstarredAt}) ->
     #{
-        event_type => document_unstarred_v1,
+        event_type => <<"document_unstarred_v1">>,
         document_id => DocId,
         unstarred_at => UnstarredAt
     }.

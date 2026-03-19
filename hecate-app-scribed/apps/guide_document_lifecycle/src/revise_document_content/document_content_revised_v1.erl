@@ -38,7 +38,7 @@ to_map(#document_content_revised_v1{
     revised_at = RevisedAt
 }) ->
     #{
-        event_type => document_content_revised_v1,
+        event_type => <<"document_content_revised_v1">>,
         document_id => DocId,
         content_binary => Content,
         content_hash => Hash,

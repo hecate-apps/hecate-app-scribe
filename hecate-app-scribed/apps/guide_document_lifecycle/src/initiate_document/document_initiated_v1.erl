@@ -53,7 +53,7 @@ to_map(#document_initiated_v1{
     created_at = CreatedAt
 }) ->
     #{
-        event_type => document_initiated_v1,
+        event_type => <<"document_initiated_v1">>,
         document_id => DocumentId,
         title => Title,
         owner => Owner,

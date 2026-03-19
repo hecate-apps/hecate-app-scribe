@@ -26,7 +26,7 @@ new(DocumentId, FolderId, MovedAt) ->
 -spec to_map(document_moved_v1()) -> map().
 to_map(#document_moved_v1{document_id = DocId, folder_id = FolderId, moved_at = MovedAt}) ->
     #{
-        event_type => document_moved_v1,
+        event_type => <<"document_moved_v1">>,
         document_id => DocId,
         folder_id => FolderId,
         moved_at => MovedAt

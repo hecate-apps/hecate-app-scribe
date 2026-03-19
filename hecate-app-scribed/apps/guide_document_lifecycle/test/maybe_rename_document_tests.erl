@@ -4,7 +4,7 @@
 handle_valid_test() ->
     Cmd = rename_document_v1:new(<<"doc-1">>, <<"New Title">>),
     {ok, [EventMap]} = maybe_rename_document:handle(Cmd),
-    ?assertEqual(document_renamed_v1, maps:get(event_type, EventMap)),
+    ?assertEqual(<<"document_renamed_v1">>, maps:get(event_type, EventMap)),
     ?assertEqual(<<"doc-1">>, maps:get(document_id, EventMap)),
     ?assertEqual(<<"New Title">>, maps:get(new_title, EventMap)),
     ?assert(is_integer(maps:get(renamed_at, EventMap))).

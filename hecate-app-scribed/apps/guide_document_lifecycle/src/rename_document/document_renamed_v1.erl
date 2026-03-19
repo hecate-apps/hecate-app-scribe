@@ -26,7 +26,7 @@ new(DocumentId, NewTitle, RenamedAt) ->
 -spec to_map(document_renamed_v1()) -> map().
 to_map(#document_renamed_v1{document_id = DocId, new_title = NewTitle, renamed_at = RenamedAt}) ->
     #{
-        event_type => document_renamed_v1,
+        event_type => <<"document_renamed_v1">>,
         document_id => DocId,
         new_title => NewTitle,
         renamed_at => RenamedAt

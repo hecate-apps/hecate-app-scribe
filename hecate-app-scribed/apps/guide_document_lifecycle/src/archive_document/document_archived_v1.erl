@@ -25,7 +25,7 @@ new(DocumentId, ArchivedAt) ->
 -spec to_map(document_archived_v1()) -> map().
 to_map(#document_archived_v1{document_id = DocId, archived_at = ArchivedAt}) ->
     #{
-        event_type => document_archived_v1,
+        event_type => <<"document_archived_v1">>,
         document_id => DocId,
         archived_at => ArchivedAt
     }.
