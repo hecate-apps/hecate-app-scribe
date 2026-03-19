@@ -2,7 +2,7 @@
   "name": "hecate-app-scribe",
   "display_name": "Scribe",
   "version": "0.4.5",
-  "icon": "pencil2",
+  "icon": "page_facing_up",
   "description": "Document Editor",
   "callback_module": "app_scribe",
   "plugin_type": "in_vm",
@@ -11,7 +11,7 @@
     {
       "type": "scribe",
       "label": "Document",
-      "icon": "pencil2",
+      "icon": "page_facing_up",
       "can_create": true,
       "import_extensions": [".md", ".txt", ".html"]
     }

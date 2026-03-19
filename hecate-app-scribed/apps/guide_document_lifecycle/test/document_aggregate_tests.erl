@@ -66,11 +66,7 @@ execute_archive_prevents_modify_test() ->
     RenamePayload = #{command_type => rename_document,
                       document_id => <<"doc-1">>, new_title => <<"X">>},
     ?assertEqual({error, document_not_modifiable},
-                 document_aggregate:execute(State2, RenamePayload)),
-    RevisePayload = #{command_type => revise_document_content,
-                      document_id => <<"doc-1">>, content_binary => <<"y">>},
-    ?assertEqual({error, document_not_modifiable},
-                 document_aggregate:execute(State2, RevisePayload)).
+                 document_aggregate:execute(State2, RenamePayload)).
 
 execute_double_archive_test() ->
     {ok, State0} = document_aggregate:init(<<"doc-1">>),

@@ -1,63 +1,57 @@
-%%% @doc Load document content on-demand from the event store.
+%%% @doc Read/write document content as a file.
 %%%
-%%% Content is no longer stored in the read model (ETS). Instead, we
-%%% replay the document's event stream and extract the content from
-%%% the last document_content_revised_v1 event.
-%%% @end
+%%% Content is stored as a .scribe file (Y.js state binary)
+%%% at {data_dir}/content/{document_id}.scribe.
+%%% Not event-sourced — just a file on disk.
 -module(get_document_content_api).
--export([handle_get/3]).
+-export([handle_get/3, handle_put/3]).
 
 handle_get(DocId, Req0, _State) ->
-    StreamId = document_aggregate:stream_id(DocId),
-    case evoq_event_store:read_all(documents_store, StreamId, forward) of
-        {ok, Events} ->
-            {Content, ContentHash, RevisedAt} = extract_last_content(Events),
+    Path = content_path(DocId),
+    case file:read_file(Path) of
+        {ok, Bytes} ->
+            Content = base64:encode(Bytes),
+            Hash = binary:encode_hex(crypto:hash(sha256, Bytes)),
             app_scribed_api_utils:json_ok(#{
                 document_id => DocId,
                 content => Content,
-                content_hash => ContentHash,
-                revised_at => RevisedAt
+                content_hash => Hash
             }, Req0);
-        {error, _Reason} ->
-            %% Stream not found or empty — return empty content
+        {error, enoent} ->
             app_scribed_api_utils:json_ok(#{
                 document_id => DocId,
-                content => <<"{}">>,
-                content_hash => <<>>,
-                revised_at => <<>>
+                content => <<>>,
+                content_hash => <<>>
             }, Req0)
     end.
 
-%% @doc Walk the event list and return content from the last content_revised event.
-%% Returns {Content, ContentHash, RevisedAt} or defaults if no content event found.
-extract_last_content(Events) ->
-    extract_last_content(Events, {<<"{}">>, <<>>, <<>>}).
-
-extract_last_content([], Acc) ->
-    Acc;
-extract_last_content([Event | Rest], Acc) ->
-    EventType = get_event_type(Event),
-    case EventType of
-        T when T =:= <<"document_content_revised_v1">>; T =:= <<"document_flushed_v1">> ->
-            Data = maps:get(data, Event, Event),
-            Content = gf(content_binary, Data),
-            Hash = gf(content_hash, Data),
-            Ts = case T of
-                <<"document_flushed_v1">> -> gf(flushed_at, Data);
-                _ -> gf(revised_at, Data)
-            end,
-            TsBin = case Ts of
-                R when is_integer(R) -> integer_to_binary(R);
-                R when is_binary(R) -> R;
-                _ -> <<>>
-            end,
-            extract_last_content(Rest, {Content, Hash, TsBin});
-        _ ->
-            extract_last_content(Rest, Acc)
+handle_put(DocId, Req0, _State) ->
+    case app_scribed_api_utils:read_json_body(Req0) of
+        {ok, Body, Req1} ->
+            Content = app_scribed_api_utils:get_field(<<"content">>, Body),
+            case Content of
+                undefined ->
+                    app_scribed_api_utils:bad_request(<<"content required">>, Req1);
+                _ ->
+                    Bytes = base64:decode(Content),
+                    Path = content_path(DocId),
+                    ok = filelib:ensure_dir(Path),
+                    ok = file:write_file(Path, Bytes),
+                    Hash = binary:encode_hex(crypto:hash(sha256, Bytes)),
+                    app_scribed_api_utils:json_ok(#{
+                        document_id => DocId,
+                        saved => true,
+                        content_hash => Hash
+                    }, Req1)
+            end;
+        {error, invalid_json, Req1} ->
+            app_scribed_api_utils:bad_request(<<"Invalid JSON">>, Req1)
     end.
 
-get_event_type(#{event_type := T}) when is_binary(T) -> T;
-get_event_type(#{<<"event_type">> := T}) when is_binary(T) -> T;
-get_event_type(_) -> undefined.
-
-gf(Key, Data) -> app_scribed_api_utils:get_field(Key, Data).
+content_path(DocId) ->
+    case persistent_term:get(app_scribe_config, undefined) of
+        #{data_dir := DataDir} ->
+            filename:join([DataDir, "content", binary_to_list(DocId) ++ ".scribe"]);
+        undefined ->
+            filename:join([app_scribed_paths:base_dir(), "content", binary_to_list(DocId) ++ ".scribe"])
+    end.

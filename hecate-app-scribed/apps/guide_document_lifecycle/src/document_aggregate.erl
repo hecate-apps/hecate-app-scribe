@@ -45,18 +45,6 @@ do_execute(rename_document, State, Payload) ->
         false -> {error, document_not_modifiable}
     end;
 
-do_execute(revise_document_content, State, Payload) ->
-    case can_modify(State) of
-        true -> maybe_revise_document_content:handle_from_map(Payload);
-        false -> {error, document_not_modifiable}
-    end;
-
-do_execute(flush_document, State, Payload) ->
-    case can_modify(State) of
-        true -> maybe_flush_document:handle_from_map(Payload);
-        false -> {error, document_not_modifiable}
-    end;
-
 do_execute(archive_document, State, Payload) ->
     #{status := S} = document_state:to_map(State),
     case S band ?DOC_ARCHIVED of

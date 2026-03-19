@@ -69,14 +69,14 @@ manifest() ->
         display_name => <<"Scribe">>,
         version => <<"0.4.5">>,
         description => <<"Document editor plugin">>,
-        icon => <<"pencil2">>,
+        icon => <<"page_facing_up">>,
         tag => <<"scribe-studio">>,
         min_sdk_version => <<"0.6.0">>,
         file_types => [
             #{
                 type => <<"scribe">>,
                 label => <<"Document">>,
-                icon => <<"pencil2">>,
+                icon => <<"page_facing_up">>,
                 can_create => true,
                 import_extensions => [<<".md">>, <<".txt">>, <<".html">>]
             }
