@@ -72,7 +72,9 @@
 		editor = new Editor({
 			element: editorElement,
 			extensions: createExtensions(doc),
-			content: initialContent ?? '',
+			// When Y.js state was loaded, don't set content (Y.Doc is the source of truth).
+			// Only set content for legacy TipTap JSON fallback.
+			...(initialContent ? { content: initialContent } : {}),
 			editorProps: {
 				attributes: {
 					class: 'prose prose-invert max-w-none p-4 min-h-[400px] focus:outline-none'
