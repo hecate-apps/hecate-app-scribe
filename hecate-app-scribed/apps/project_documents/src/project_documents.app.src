@@ -1,6 +1,6 @@
 {application, project_documents, [
     {description, "PRJ service: project domain events to ETS read model"},
-    {vsn, "0.4.4"},
+    {vsn, "0.4.5"},
     {registered, [project_documents_sup, project_documents_store]},
     {mod, {project_documents_app, []}},
     {applications, [
