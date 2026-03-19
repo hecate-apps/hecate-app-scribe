@@ -4,83 +4,27 @@
 	import { onMount } from 'svelte';
 	import { setApi, type PluginApi } from './shared/api.js';
 	import ScribeEditor from './editor/ScribeEditor.svelte';
-	import { getDocument, createDocument } from './documents/documents.js';
 
 	let { api, itemId }: { api: PluginApi; itemId?: string } = $props();
 
-	let documentId = $state<string | null>(null);
-	let loading = $state(true);
-	let error = $state<string | null>(null);
-
-	onMount(async () => {
+	onMount(() => {
 		setApi(api);
-		await resolveDocument();
 	});
-
-	async function resolveDocument() {
-		loading = true;
-		error = null;
-
-		// If item_id provided (from Briefcase), use it as document_id
-		if (itemId) {
-			try {
-				// Check if document already exists in scribe's store
-				await getDocument(itemId);
-				documentId = itemId;
-			} catch {
-				// Document doesn't exist yet — create it with the briefcase item_id
-				try {
-					await createDocument('Untitled Document', itemId);
-					documentId = itemId;
-				} catch {
-					// "already_initiated" is fine — just open it
-					documentId = itemId;
-				}
-			}
-		} else {
-			error = 'no_item_id';
-		}
-
-		loading = false;
-	}
 </script>
 
 <div class="flex h-full bg-zinc-950 text-zinc-200">
-	{#if loading}
-		<div class="flex-1 flex items-center justify-center">
-			<div class="text-center text-zinc-500">
-				<div class="text-2xl mb-2 animate-pulse">{'\u270F\uFE0F'}</div>
-				<div class="text-sm">Loading document...</div>
-			</div>
+	{#if itemId}
+		<div class="flex-1 flex flex-col min-w-0">
+			{#key itemId}
+				<ScribeEditor {itemId} />
+			{/key}
 		</div>
-	{:else if error === 'no_item_id'}
+	{:else}
 		<div class="flex-1 flex items-center justify-center">
 			<div class="text-center text-zinc-400 max-w-sm space-y-3">
 				<div class="text-3xl">{'\uD83D\uDCBC'}</div>
 				<p class="text-sm">Open a document from <a href="/briefcase" class="text-indigo-400 hover:text-indigo-300 underline">Briefcase</a> to start editing.</p>
-				<p class="text-xs text-zinc-500">
-					Go to <a href="/briefcase" class="text-indigo-400/70 hover:text-indigo-300 underline">Briefcase</a>, create a new document, and click it to open in Scribe.
-				</p>
 			</div>
-		</div>
-	{:else if error}
-		<div class="flex-1 flex items-center justify-center">
-			<div class="text-center text-red-400 max-w-sm space-y-3">
-				<div class="text-3xl">{'\u26A0\uFE0F'}</div>
-				<p class="text-sm">{error}</p>
-				<button
-					onclick={resolveDocument}
-					class="px-4 py-2 rounded text-xs bg-indigo-600 text-white hover:bg-indigo-500 cursor-pointer"
-				>
-					Retry
-				</button>
-			</div>
-		</div>
-	{:else if documentId}
-		<div class="flex-1 flex flex-col min-w-0">
-			{#key documentId}
-				<ScribeEditor {documentId} />
-			{/key}
 		</div>
 	{/if}
 </div>

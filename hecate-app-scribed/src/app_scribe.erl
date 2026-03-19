@@ -1,12 +1,8 @@
 %%% @doc Scribe plugin callback module.
 %%%
-%%% Implements the hecate_plugin behaviour for in-VM loading.
-%%% When loaded by hecate_plugin_loader, this module provides:
-%%%   - ReckonDB store config (documents_store)
-%%%   - Cowboy routes (mounted under /plugin/hecate-app-scribe/api/)
-%%%   - Static dir (frontend assets at /plugin/hecate-app-scribe/)
-%%%   - Plugin manifest
-%%% @end
+%%% Pure document editor — no event sourcing.
+%%% Content stored as .scribe files (Y.js state in ZIP archives).
+%%% All metadata (name, folder, star, archive) managed by Briefcase.
 -module(app_scribe).
 -behaviour(hecate_plugin).
 
@@ -15,48 +11,26 @@
 -export([init/1, routes/0, store_config/0, static_dir/0, manifest/0, flag_maps/0]).
 
 -spec init(map()) -> {ok, map()} | {error, term()}.
-init(#{plugin_name := PluginName, store_id := StoreId, data_dir := DataDir}) ->
-    logger:info("[app-scribe] Initializing plugin ~s (store: ~p, data: ~s)",
-                [PluginName, StoreId, DataDir]),
-    %% Store app_scribe config so domain modules can find paths
+init(#{plugin_name := PluginName, data_dir := DataDir}) ->
+    logger:info("[app-scribe] Initializing plugin ~s (data: ~s)", [PluginName, DataDir]),
     persistent_term:put(app_scribe_config, #{
         plugin_name => PluginName,
-        store_id => StoreId,
         data_dir => DataDir
     }),
-    %% Start domain supervisors
-    case app_scribe_sup:start_link() of
-        {ok, Pid} ->
-            %% CRITICAL: unlink supervisor from this process.
-            %% Plugin loader calls init/1 from a temporary spawned process.
-            %% OTP supervisors stop themselves when their parent exits.
-            %% Without unlink, the supervisor dies when the init process completes.
-            unlink(Pid),
-            logger:info("[app-scribe] Supervision tree started (~p)", [Pid]),
-            {ok, #{sup_pid => Pid}};
-        {error, {already_started, Pid}} ->
-            logger:info("[app-scribe] Supervision tree already running (~p)", [Pid]),
-            {ok, #{sup_pid => Pid}};
-        {error, Reason} ->
-            logger:error("[app-scribe] Failed to start supervision tree: ~p", [Reason]),
-            {error, Reason}
-    end.
+    %% Ensure content directory exists
+    ContentDir = filename:join(DataDir, "content"),
+    ok = filelib:ensure_path(ContentDir),
+    {ok, #{}}.
 
 -spec routes() -> [{string(), module(), term()}].
 routes() ->
     [
-        {"/documents", documents_api, []},
-        {"/documents/:document_id", document_by_id_api, []},
-        {"/documents/:document_id/content", document_content_api, []}
+        {"/content/:item_id", document_content_api, []}
     ].
 
--spec store_config() -> #hecate_store_config{}.
+-spec store_config() -> none.
 store_config() ->
-    #hecate_store_config{
-        store_id = documents_store,
-        dir_name = "documents",
-        description = "Scribe document event store"
-    }.
+    none.
 
 -spec static_dir() -> string() | none.
 static_dir() ->
@@ -68,7 +42,7 @@ manifest() ->
         name => <<"hecate-app-scribe">>,
         display_name => <<"Scribe">>,
         version => <<"0.5.0">>,
-        description => <<"Document editor plugin">>,
+        description => <<"Document editor">>,
         icon => <<"page_facing_up">>,
         tag => <<"scribe-studio">>,
         min_sdk_version => <<"0.6.0">>,
@@ -85,4 +59,4 @@ manifest() ->
 
 -spec flag_maps() -> #{binary() => evoq_bit_flags:flag_map()}.
 flag_maps() ->
-    #{}.  %% No aggregates yet — scribe uses simple CRUD for now
+    #{}.

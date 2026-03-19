@@ -6,12 +6,9 @@
 	import * as Y from 'yjs';
 	import { createExtensions } from './extensions.js';
 	import Toolbar from './toolbar/Toolbar.svelte';
-	import { saveDocumentContent, getDocumentContent, getDocument, renameDocument } from '../documents/documents.js';
+	import { getContent, saveContent } from '../documents/documents.js';
 
-	let { documentId, onTitleChange }: {
-		documentId: string;
-		onTitleChange?: (title: string) => void;
-	} = $props();
+	let { itemId }: { itemId: string } = $props();
 
 	let editor: Editor | null = $state(null);
 	let editorElement: HTMLElement;
@@ -20,12 +17,20 @@
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let ydoc: Y.Doc | null = null;
 
-	let title = $state('');
-	let editingTitle = $state(false);
-	let titleInput = $state('');
-
 	onMount(async () => {
-		await loadDocument();
+		ydoc = new Y.Doc();
+
+		try {
+			const data = await getContent(itemId);
+			if (data.content && data.content.length > 0) {
+				const binary = base64ToUint8Array(data.content);
+				Y.applyUpdate(ydoc, binary);
+			}
+		} catch (e) {
+			console.error('[scribe] Failed to load content:', e);
+		}
+
+		initEditor(ydoc);
 	});
 
 	onDestroy(() => {
@@ -34,47 +39,10 @@
 		ydoc?.destroy();
 	});
 
-	async function loadDocument() {
-		// Load title
-		try {
-			const doc = await getDocument(documentId);
-			title = doc.title;
-		} catch (e) {
-			console.error('[scribe] Failed to load document:', e);
-		}
-
-		// Create Y.Doc and apply saved state
-		ydoc = new Y.Doc();
-
-		try {
-			const data = await getDocumentContent(documentId);
-			if (data.content && data.content !== '{}' && data.content !== '') {
-				try {
-					// Try as base64 Y.js state first (v0.3.0+ format)
-					const binary = base64ToUint8Array(data.content);
-					Y.applyUpdate(ydoc, binary);
-				} catch {
-					// Fall back to TipTap JSON (v0.2.x legacy)
-					const parsed = JSON.parse(data.content);
-					// Initialize editor with JSON content, Y.js will pick it up
-					initEditor(ydoc, parsed);
-					return;
-				}
-			}
-		} catch (e) {
-			console.error('[scribe] Failed to load content:', e);
-		}
-
-		initEditor(ydoc, null);
-	}
-
-	function initEditor(doc: Y.Doc, initialContent: any) {
+	function initEditor(doc: Y.Doc) {
 		editor = new Editor({
 			element: editorElement,
 			extensions: createExtensions(doc),
-			// When Y.js state was loaded, don't set content (Y.Doc is the source of truth).
-			// Only set content for legacy TipTap JSON fallback.
-			...(initialContent ? { content: initialContent } : {}),
 			editorProps: {
 				attributes: {
 					class: 'prose prose-invert max-w-none p-4 min-h-[400px] focus:outline-none'
@@ -87,29 +55,6 @@
 		});
 	}
 
-	function startTitleEdit() {
-		titleInput = title;
-		editingTitle = true;
-	}
-
-	async function commitTitleEdit() {
-		editingTitle = false;
-		const newTitle = titleInput.trim();
-		if (!newTitle || newTitle === title) return;
-		try {
-			await renameDocument(documentId, newTitle);
-			title = newTitle;
-			onTitleChange?.(newTitle);
-		} catch (e) {
-			console.error('[scribe] Failed to rename:', e);
-		}
-	}
-
-	function handleTitleKey(e: KeyboardEvent) {
-		if (e.key === 'Enter') commitTitleEdit();
-		if (e.key === 'Escape') editingTitle = false;
-	}
-
 	function scheduleSave() {
 		if (saveTimeout) clearTimeout(saveTimeout);
 		saveTimeout = setTimeout(() => doSave(), 2000);
@@ -120,15 +65,13 @@
 		saving = true;
 		try {
 			const state = Y.encodeStateAsUpdate(ydoc);
-			await saveDocumentContent(documentId, uint8ArrayToBase64(state));
+			await saveContent(itemId, uint8ArrayToBase64(state));
 		} catch (e) {
 			console.error('[scribe] Failed to save:', e);
 		} finally {
 			saving = false;
 		}
 	}
-
-	// --- Base64 helpers ---
 
 	function uint8ArrayToBase64(bytes: Uint8Array): string {
 		let binary = '';
@@ -149,27 +92,6 @@
 </script>
 
 <div class="flex flex-col h-full bg-zinc-950 text-zinc-200">
-	<div class="flex items-center gap-2 px-4 py-2 border-b border-zinc-800">
-		{#if editingTitle}
-			<!-- svelte-ignore a11y_autofocus -->
-			<input
-				type="text"
-				bind:value={titleInput}
-				onblur={commitTitleEdit}
-				onkeydown={handleTitleKey}
-				autofocus
-				class="flex-1 text-sm font-semibold bg-zinc-800 text-zinc-200 border border-zinc-600 rounded px-2 py-1 outline-none focus:border-indigo-500"
-			/>
-		{:else}
-			<button
-				onclick={startTitleEdit}
-				class="text-sm font-semibold text-zinc-300 hover:text-zinc-100 truncate text-left cursor-text"
-				title="Click to rename"
-			>
-				{title || 'Untitled'}
-			</button>
-		{/if}
-	</div>
 	<Toolbar {editor} />
 	<div class="flex-1 overflow-auto">
 		<div bind:this={editorElement}></div>
